@@ -147,6 +147,13 @@ class Data:
     def sample(self, k):
         self.data = random.sample(self.data, k)
 
+    # Save data to a file with the specified name.
+    def save_file(self, file_name):
+        file = open(file_name, "w")
+        for line in self.data:
+            file.write(",".join(map(str, line)) + "\n")
+        file.close()
+
     # Prints the data set nicely.
     def print(self):
         for row in self.data:
@@ -158,24 +165,33 @@ class Data:
 # The following functions are meant to handle the preprocessing of the data sets used in our experimental design.
 
 
-# Gets the abalone data set.
 def get_abalone_data():
-    data = util.read_file(ABALONE_DATA_FILE)
-    abalone_data = Data(data, 8, list(range(0, 8)), ABALONE_DATA_FILE)
+    return get_abalone_data(ABALONE_DATA_FILE)
+
+
+# Gets the abalone data set.
+def get_abalone_data(file_name, normalize=True):
+    data = util.read_file(file_name)
+    abalone_data = Data(data, 8, list(range(0, 8)), file_name)
     numeric_columns = list(range(1, 9))
     # Convert attribute columns to floats
     abalone_data.convert_to_float(numeric_columns)
     # Normalize values
-    abalone_data.normalize_z_score(numeric_columns)
+    if normalize:
+        abalone_data.normalize_z_score(numeric_columns)
     # Randomly shuffle values.
     abalone_data.shuffle()
     return abalone_data
 
 
-# Gets the car data set.
 def get_car_data():
-    data = util.read_file(CAR_DATA_FILE)
-    car_data = Data(data, 6, list(range(0, 6)), CAR_DATA_FILE)
+    return get_car_data(CAR_DATA_FILE)
+
+
+# Gets the car data set.
+def get_car_data(file_name, normalize=True):
+    data = util.read_file(file_name)
+    car_data = Data(data, 6, list(range(0, 6)), file_name)
     # Convert attribute columns to numeric scheme
     car_data.convert_attribute(0, {'low': 0, 'med': 1, 'high': 2, 'vhigh': 3})
     car_data.convert_attribute(1, {'low': 0, 'med': 1, 'high': 2, 'vhigh': 3})
@@ -185,45 +201,60 @@ def get_car_data():
     car_data.convert_attribute(5, {'low': 0, 'med': 1, 'high': 2})
     numeric_columns = list(range(0, 6))
     # Normalize values.
-    car_data.normalize_z_score(numeric_columns)
+    if normalize:
+        car_data.normalize_z_score(numeric_columns)
     # Randomly shuffle values.
     car_data.shuffle()
     return car_data
 
 
-# Gets the forest fires data set.
 def get_forest_fires_data():
-    data = util.read_file(FOREST_FIRE_DATA_FILE)
-    forest_fires_data = Data(data, 12, list(range(0, 12)), FOREST_FIRE_DATA_FILE)
+    return get_forest_fires_data(FOREST_FIRE_DATA_FILE)
+
+
+# Gets the forest fires data set.
+def get_forest_fires_data(file_name, normalize=True):
+    data = util.read_file(file_name)
+    forest_fires_data = Data(data, 12, list(range(0, 12)), file_name)
     numeric_columns = [0, 1] + list(range(4, 13))
     # Remove the first line, which is the header info.
     forest_fires_data.remove_header(1)
     # Convert applicable columns to floats, including the class column.
     forest_fires_data.convert_to_float([0, 1, 4, 5, 6, 7, 8, 9, 10, 11, 12])
     # Normalize values.
-    forest_fires_data.normalize_z_score([0, 1, 4, 5, 6, 7, 8, 9, 10, 11])
+    if normalize:
+        forest_fires_data.normalize_z_score([0, 1, 4, 5, 6, 7, 8, 9, 10, 11])
     # Randomly shuffle values.
     forest_fires_data.shuffle()
-    forest_fires_data.sample(250)
     return forest_fires_data
 
 
 def get_machine_data():
-    data = util.read_file(MACHINE_DATA_FILE)
+    return get_machine_data(MACHINE_DATA_FILE)
+
+
+# Gets the machine data set.
+def get_machine_data(file_name, normalize=True):
+    data = util.read_file(file_name)
     # There is another final column but we probably want to exclude it.
-    machine_data = Data(data, 8, list(range(0, 8)), MACHINE_DATA_FILE)
+    machine_data = Data(data, 8, list(range(0, 8)), file_name)
     # Convert all columns except the first two to floats, including the class column.
     machine_data.convert_to_float(list(range(2, 9)))
     # Normalize values.
-    machine_data.normalize_z_score(list(range(2, 8)))
+    if normalize:
+        machine_data.normalize_z_score(list(range(2, 8)))
     # Randomly shuffle values.
     machine_data.shuffle()
     return machine_data
 
 
-# Gets the segmentation data set.
 def get_segmentation_data():
-    data = util.read_file(SEGMENTATION_DATA_FILE)
+    return get_segmentation_data(SEGMENTATION_DATA_FILE)
+
+
+# Gets the segmentation data set.
+def get_segmentation_data(file_name, normalize=True):
+    data = util.read_file(file_name)
     # Attribute columns are all numeric
     #  * Attribute #7, vedge-sd, removed because it is a standard deviation.
     #  * Attribute #9, hedge-sd, removed for same reason.
@@ -234,20 +265,26 @@ def get_segmentation_data():
     # Convert all attribute columns to numeric values.
     segmentation_data.convert_to_float(attr_cols)
     # Normalize values.
-    segmentation_data.normalize_z_score(attr_cols)
+    if normalize:
+        segmentation_data.normalize_z_score(attr_cols)
     # Randomly shuffle values.
     segmentation_data.shuffle()
     return segmentation_data
 
 
-# Gets the wine data set.
 def get_wine_data():
-    data = util.read_file(WINE_DATA_FILE)
-    wine_data = Data(data, 11, list(range(0, 11)), WINE_DATA_FILE)
+    return get_wine_data(WINE_DATA_FILE)
+
+
+# Gets the wine data set.
+def get_wine_data(file_name, normalize=True):
+    data = util.read_file(file_name)
+    wine_data = Data(data, 11, list(range(0, 11)), file_name)
     # Convert all attribute columns to numeric values.
     wine_data.convert_to_float(list(range(0, 12)))
     # Normalize values.
-    wine_data.normalize_z_score(list(range(0, 11)))
+    if normalize:
+        wine_data.normalize_z_score(list(range(0, 11)))
     # Randomly shuffle values.
     wine_data.shuffle()
     return wine_data

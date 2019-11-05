@@ -1,0 +1,5 @@
+These are the corresponding train, test, and center data set for each fold of each data set
+with a k-value equal to the sqrt(n) where n is the length of the entire (original) data set.
+
+Note that when an algorithm uses data from the training set as the center, that these centers are omitted from the
+training data found here.

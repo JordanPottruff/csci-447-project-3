@@ -1,7 +1,7 @@
 import math
 import numpy as np
-from ..src.data import data as d
-from ..src import activation_functions as af
+from src.data import data as d
+from src import activation_functions as af
 # hidden nodes is first ex 4
 # input nodes is second for matrix ex 3
 # 4x3

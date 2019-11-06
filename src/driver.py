@@ -1,7 +1,8 @@
 # driver.py
 # File for running our experimental design.
-import src.data.data as d
-import src.mfnn as mfnn
+import src.data.data_set as d
+from src.networks.radial_basis_nn import RBFNN
+from src.networks.mfnn import MFNN
 
 
 # Runs the RBF network by accessing the train, test, and center data from files. Files are used so that we do not have
@@ -22,18 +23,18 @@ def run_rbf_network(data_set_name, data_opener):
         # Set Learning Rate
         learning_rate = 1
         # Run RBFNN
-        output_values = rbfnn.RBFNN(center_data, test_data, train_data, outputs, learning_rate).run_rbfnn()
+        output_values = RBFNN(center_data, test_data, train_data, outputs, learning_rate).run_rbfnn()
 
 def main():
-    # test_data = d.get_test_data().get_data()
-    # training_set = test_data
-    # validation_set = test_data * 2
+    test_data = d.get_test_data()
+    training_set = test_data.copy()
+    validation_set = training_set.copy()
 
-    # multilayer = mfnn.MFNN(training_set, validation_set, [2, 2, 2], None, None, None)
-    # example = test_data[0][:-1]
-    # multilayer.backpropagation(example, [1,0])
+    multilayer = MFNN(training_set, validation_set, [2, 2, 2], 1, None, [0, 1])
+    multilayer.train()
 
     # We can run the RBF network using the following helper function:
-    run_rbf_network("segmentation-eknn", d.get_segmentation_data)
+    # run_rbf_network("segmentation-eknn", d.get_segmentation_data)
 
 
+main()

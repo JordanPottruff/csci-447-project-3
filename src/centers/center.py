@@ -3,7 +3,7 @@
 
 from src.centers.edited_knn import EditedKNN
 from src.centers.k_means import KMeans
-import src.data.data as d
+import src.data.data_set as d
 import math
 
 

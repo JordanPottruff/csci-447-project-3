@@ -1,4 +1,4 @@
-# data_set.py
+# data.py
 # Includes a class for defining a Data object that can be used in our algorithms. Also includes a few functions for
 # opening the data sets used in our experimental design.
 import random
@@ -11,6 +11,7 @@ FOREST_FIRE_DATA_FILE = "../data/forestfires.data"
 MACHINE_DATA_FILE = "../data/machine.data"
 SEGMENTATION_DATA_FILE = "../data/segmentation.data"
 WINE_DATA_FILE = "../data/winequality.data"
+TEST_DATA_FILE = '../data/test/test_set.data'
 
 
 # The Data class encapsulates a simple 2D list of our data (where each row is a data point). On top of this, it
@@ -288,3 +289,10 @@ def get_wine_data(file_name, normalize=True):
     # Randomly shuffle values.
     wine_data.shuffle()
     return wine_data
+
+# Gets test_set data
+def get_test_data():
+    data = util.read_file(TEST_DATA_FILE)
+    test_data = Data(data, 2, [0, 2], TEST_DATA_FILE)
+    test_data.convert_to_float([0, 1, 2])
+    return test_data

@@ -15,7 +15,14 @@ def run_rbf_network(data_set_name, data_opener):
         center_data = data_opener(data_set_name + "-fold-" + str(fold_i) + "-centers.txt", False)
 
         # The training, test, and centers are now loaded in the respective variables above.
-
+        outputs = []
+        for row in center_data.data:
+            outputs.append(row[center_data.class_col])
+        outputs = list(set(outputs))
+        # Set Learning Rate
+        learning_rate = 1
+        # Run RBFNN
+        output_values = rbfnn.RBFNN(center_data, test_data, train_data, outputs, learning_rate).run_rbfnn()
 
 def main():
     # test_data = d.get_test_data().get_data()

@@ -24,6 +24,7 @@ class MFNN:
 
 
 
+
     def init_weights(self):
         weights = []
         for size in range(1, len(self.layer_size)):

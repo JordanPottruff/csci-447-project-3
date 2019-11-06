@@ -50,7 +50,7 @@ class MFNN:
         numpy_training_data = self.training_data.get_numpy_list()
 
         mini_batch_size = 4
-        for i in range(1000000):
+        for i in range(100000):
             # print(self.weights)
             if self.is_regression():
                 print("Error: " + str(self.get_validation_error()))
@@ -73,11 +73,6 @@ class MFNN:
         squared_sum = 0
         for example_array, expected_class in numpy_validation_data:
             output = self.run(example_array)
-            print("Example: " + str(example_array))
-            print("Validate: ")
-            print(output)
-            print(expected_class)
-            print(self.weights)
             squared_sum += (self.get_class_value(output) - expected_class)**2
         return math.sqrt(squared_sum)
 
@@ -101,8 +96,8 @@ class MFNN:
         activation = [inputs]
         for i in range(len(self.weights)):
             inputs = np.dot(self.weights[i], inputs)
-            if not self.is_regression() or i != len(self.weights) - 1:
-                inputs = sigmoid(inputs)
+            if not (self.is_regression() and i == len(self.weights) - 1):
+               inputs = sigmoid(inputs)
             if i < len(self.weights) - 1:
                 inputs = np.append(inputs, sigmoid(1))
             activation.append(inputs)

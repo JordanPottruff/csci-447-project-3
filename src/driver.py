@@ -44,12 +44,13 @@ def test_regression():
     validation_set = training_set.copy()
     validation_set.data *= 10
 
-    multilayer = MFNN(training_set, validation_set, [2, 5, 5, 1], 10, None, None)
+    multilayer = MFNN(training_set, validation_set, [2, 10, 1], 1, None, None)
     multilayer.train()
 
 
 def main():
     test_regression()
+    # test_classification()
     # We can run the RBF network using the following helper function:
     # run_rbf_network("segmentation-eknn", d.get_segmentation_data)
 

@@ -70,16 +70,22 @@ class Data:
     # in order for the Data class to work with numerous data sets.
     def convert_attribute(self, col, value_map):
         for row in self.data:
+            new_row = list(row)
             if row[col] in value_map:
-                row[col] = value_map[row[col]]
+                new_row[col] = value_map[row[col]]
+            row = new_row
 
     # Converts values in a specified set of columns (represented as indices) to floating point values.
     def convert_to_float(self, cols):
-        for line in self.data:
+        for line_i in range(len(self.data)):
+            line = self.data[line_i]
+            new_line = list(line)
             for i in range(len(line)):
                 if i not in cols:
                     continue
-                line[i] = float(line[i])
+                new_line[i] = float(line[i])
+            line = tuple(new_line)
+            self.data[line_i] = line
 
     # Normalizes the values in a specified set of columns (represented as indices) to a z-score. For interpretation, the
     # new value in the data set represents how many standard deviations an attribute value is from the mean of the
@@ -99,13 +105,15 @@ class Data:
             standard_deviation = math.sqrt(sum_square_diffs)
 
             # Replace each column value with it's z-score.
-            for row in self.data:
+            for row_i in range(len(self.data)):
+                row = list(self.data[row_i])
                 # If the standard deviation is 0, we just assign the z_score as 0 (no variation from mean).
                 z_score = 0
                 if standard_deviation != 0:
                     # Otherwise we can use the standard calculation for z_scores.
                     z_score = (row[col] - mean) / standard_deviation
                 row[col] = z_score
+                self.data[row_i] = tuple(row)
 
     # Shuffles the rows in the data randomly.
     def shuffle(self):
@@ -160,6 +168,10 @@ class Data:
             print(row)
         print()
 
+    def convert_data(self):
+        converted = []
+        for obs in self.data:
+            converted.append()
 
 # NOTE:
 # The following functions are meant to handle the preprocessing of the data sets used in our experimental design.

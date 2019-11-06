@@ -12,7 +12,7 @@ class EditedKNN(KNN):
     # use the "run" method from KNN once the object is created.
     def __init__(self, training_data, k):
         super().__init__(training_data, k)
-        data_copy = training_data.copy().partition(.80)
+        data_copy = training_data.copy().partition(.90)
         self.training_data = data_copy[0]
         self.validation_data = data_copy[1]
         self.find_edited_data()
@@ -33,19 +33,24 @@ class EditedKNN(KNN):
     # vectors removed
     def find_edited_data(self):
         counter = 0
-        while True:
-            if counter > len(self.training_data.data):
-                break
-            prev_accuracy = self.get_validation_accuracy()
-            example = self.training_data.data.pop(0)
-            counter += 1
-            if util.get_highest_class(self.run(example)) != example[self.training_data.class_col]:
-                self.training_data.data.append(example)
-            else:
-                if prev_accuracy > self.get_validation_accuracy() + .01:
+
+        last_cycles_accuracy = self.get_validation_accuracy()
+        while last_cycles_accuracy <= self.get_validation_accuracy() + .01:
+            training_data_copy = self.training_data.copy()
+            for i in range(len(training_data_copy.data)):
+                print(str(i) + "/" + str(len(training_data_copy.data)))
+                prev_accuracy = self.get_validation_accuracy()
+                example = training_data_copy.data[i]
+
+                self.training_data.data.remove(example)
+
+                if util.get_highest_class(self.run(example)) != example[self.training_data.class_col]:
                     self.training_data.data.append(example)
                 else:
-                    counter = 0
+                    if prev_accuracy > self.get_validation_accuracy() + .01:
+                        self.training_data.data.append(example)
+            last_cycles_accuracy = self.get_validation_accuracy()
+
 
 
 

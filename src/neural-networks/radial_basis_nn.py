@@ -20,7 +20,7 @@ class RBFNN:
         #  I need max distance between any 2 cluster centers and divide by sqrt(2*number of cluster centers)
         # Find distances between centroids and take max distance
         # Find max distance between centers from eknn
-        max_dist_bw_clusters = self.receptors.get_stdrd_dev()
+        max_dist_bw_clusters = self.receptors.get_max_distance_clusters()
         num_cluster_centers = len(self.receptors.data)
         stdrd_dev = max_dist_bw_clusters/math.sqrt((2*num_cluster_centers))
         return stdrd_dev

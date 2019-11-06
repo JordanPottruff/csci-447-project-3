@@ -61,7 +61,22 @@ class Data:
                 sum += (a[attr_col] - b[attr_col])**2
 
         return math.sqrt(sum)
-
+    
+    def get_max_distance_clusters(self):
+        """Find the max distance between any 2 cluster centers"""
+        max_distance = 0
+        idx = 0
+        starter_row = self.data[idx]
+        while idx < len(self.data)-2:
+            for i in range(idx+1, len(self.data)-1):
+                # Calculate distance between starter_row
+                distance = self.distance(starter_row, self.data[i])
+                if distance > max_distance:
+                    max_distance = distance
+            idx += 1
+            starter_row = self.data[idx]
+        return max_distance
+    
     # Removes the first 'length' rows from the data. Use if there is header information.
     def remove_header(self, length):
         self.data = self.data[length:]

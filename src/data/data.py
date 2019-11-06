@@ -11,7 +11,7 @@ FOREST_FIRE_DATA_FILE = "../data/forestfires.data"
 MACHINE_DATA_FILE = "../data/machine.data"
 SEGMENTATION_DATA_FILE = "../data/segmentation.data"
 WINE_DATA_FILE = "../data/winequality.data"
-TEST_DATA_FILE = '../data/test/test_set.data'
+TEST_DATA_FILE = '../data/test/classification_test_set.data'
 
 
 # The Data class encapsulates a simple 2D list of our data (where each row is a data point). On top of this, it

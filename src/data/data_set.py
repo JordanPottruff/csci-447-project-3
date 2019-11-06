@@ -10,7 +10,8 @@ FOREST_FIRE_DATA_FILE = "../data/forestfires.data"
 MACHINE_DATA_FILE = "../data/machine.data"
 SEGMENTATION_DATA_FILE = "../data/segmentation.data"
 WINE_DATA_FILE = "../data/winequality.data"
-TEST_DATA_FILE = '../data/test/test_set.data'
+CLASSIFICATION_TEST_DATA_FILE = '../data/test/classification_test_set.data'
+REGRESSION_TEST_DATA_FILE = '../data/test/regression_test_set.data'
 
 
 class DataSet:
@@ -305,8 +306,17 @@ def get_wine_data(file_name, normalize=True):
 
 
 # Gets test_set data
-def get_test_data():
-    data = util.read_file(TEST_DATA_FILE)
-    test_data = DataSet(data, [0, 2], 2, 2, TEST_DATA_FILE)
+def get_classification_test_data():
+    data = util.read_file(CLASSIFICATION_TEST_DATA_FILE)
+    test_data = DataSet(data, [0, 2], 2, 2, CLASSIFICATION_TEST_DATA_FILE)
     test_data.convert_to_float([0, 1, 2])
+    return test_data
+
+
+def get_regression_test_data():
+    data = util.read_file(REGRESSION_TEST_DATA_FILE)
+    test_data = DataSet(data, [0, 2], 2, 2, REGRESSION_TEST_DATA_FILE)
+    test_data.remove_header(1)
+    test_data.convert_to_float([0, 1, 2])
+    test_data.normalize_z_score([0, 1])
     return test_data

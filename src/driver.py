@@ -25,14 +25,31 @@ def run_rbf_network(data_set_name, data_opener):
         # Run RBFNN
         output_values = RBFNN(center_data, test_data, train_data, outputs, learning_rate).run_rbfnn()
 
-def main():
-    test_data = d.get_test_data()
+
+def test_classification():
+    test_data = d.get_classification_test_data()
     training_set = test_data.copy()
+    training_set.data *= 12
     validation_set = training_set.copy()
+    validation_set.data *= 10
 
     multilayer = MFNN(training_set, validation_set, [2, 2, 2], 1, None, [0, 1])
     multilayer.train()
 
+
+def test_regression():
+    test_data = d.get_regression_test_data()
+    training_set = test_data.copy()
+    training_set.data *= 12
+    validation_set = training_set.copy()
+    validation_set.data *= 10
+
+    multilayer = MFNN(training_set, validation_set, [2, 5, 5, 1], 10, None, None)
+    multilayer.train()
+
+
+def main():
+    test_regression()
     # We can run the RBF network using the following helper function:
     # run_rbf_network("segmentation-eknn", d.get_segmentation_data)
 

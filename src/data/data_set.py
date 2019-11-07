@@ -45,11 +45,11 @@ class DataSet:
     # column are converted using the given map from the original value to the new value. This is purposefully abstract
     # in order for the Data class to work with numerous data sets.
     def convert_str_attribute(self, col: int, value_map: Dict[str, float]):
-        for row in self.data:
-            new_row = list(row)
+        for i in range(len(self.data)):
+            row = list(self.data[i])
             if row[col] in value_map:
-                new_row[col] = value_map[row[col]]
-            row = new_row
+                row[col] = value_map[row[col]]
+            self.data[i] = tuple(row)
 
     # Converts values in a specified set of columns (represented as indices) to floating point values.
     def convert_to_float(self, cols):
@@ -217,7 +217,7 @@ def get_car_data(file_name, normalize=True):
     car_data.convert_str_attribute(5, {'low': 0, 'med': 1, 'high': 2})
     # Normalize values.
     if normalize:
-        car_data.normalize_z_score(list(range(0,6)))
+        car_data.normalize_z_score(list(range(0, 6)))
     # Randomly shuffle values.
     car_data.shuffle()
     return car_data

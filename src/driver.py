@@ -3,6 +3,7 @@
 import src.data.data_set as d
 from src.networks.radial_basis_nn import RBFNN
 from src.networks.mfnn import MFNN
+import math
 
 
 # Runs the RBF network by accessing the train, test, and center data from files. Files are used so that we do not have
@@ -24,6 +25,15 @@ def run_rbf_network(data_set_name, data_opener):
         learning_rate = 1
         # Run RBFNN
         output_values = RBFNN(center_data, test_data, train_data, outputs, learning_rate).run_rbfnn()
+
+
+def run_mfnn_network(data_set, classes, layers, learning_rate, momentum):
+    folds = data_set.validation_folds(10)
+    for fold_i, fold in enumerate(folds):
+        test = fold['test']
+        train, validation = fold['train'].partition(.8)
+        mfnn = MFNN(train, validation, layers, learning_rate, momentum, classes)
+        print(mfnn.get_accuracy(test))
 
 
 def test_classification():
@@ -49,10 +59,11 @@ def test_regression():
 
 
 def main():
-    test_regression()
+    # test_regression()
     # test_classification()
     # We can run the RBF network using the following helper function:
     # run_rbf_network("segmentation-eknn", d.get_segmentation_data)
-
+    car_data = d.get_car_data("../data/car.data")
+    run_mfnn_network(car_data, ["unacc", "acc", "good", "v-good"], [6, 10, 4], 1, 0.01)
 
 main()

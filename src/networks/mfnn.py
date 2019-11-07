@@ -53,9 +53,9 @@ class MFNN:
         for i in range(100000):
             # print(self.weights)
             if self.is_regression():
-                print("Error: " + str(self.get_validation_error()))
+                print("Error: " + str(self.get_error(self.validation_data)))
             else:
-                print("Accuracy: " + str(self.get_validation_accuracy()))
+                print("Accuracy: " + str(self.get_accuracy(self.validation_data)))
             random.shuffle(numpy_training_data)
             mini_batches = [numpy_training_data[k:k + mini_batch_size] for k in range(0, len(numpy_training_data), mini_batch_size)]
             for mini_batch in mini_batches:
@@ -68,22 +68,22 @@ class MFNN:
             for i in range(len(self.weights)):
                 self.weights[i] -= (self.learning_rate/len(mini_batch)) * delta_weights[i]
 
-    def get_validation_error(self):
-        numpy_validation_data = self.validation_data.get_numpy_list()
+    def get_error(self, data_set):
+        numpy_data = data_set.get_numpy_list()
         squared_sum = 0
-        for example_array, expected_class in numpy_validation_data:
+        for example_array, expected_class in numpy_data:
             output = self.run(example_array)
             squared_sum += (self.get_class_value(output) - expected_class)**2
         return math.sqrt(squared_sum)
 
-    def get_validation_accuracy(self):
-        numpy_validation_data = self.validation_data.get_numpy_list()
+    def get_accuracy(self, data_set):
+        numpy_data = data_set.get_numpy_list()
         correct = 0
-        for example_array, expected_class in numpy_validation_data:
+        for example_array, expected_class in numpy_data:
             output = self.run(example_array)
             if self.get_class_value(output) == expected_class:
                 correct += 1
-        return correct / len(numpy_validation_data)
+        return correct / len(numpy_data)
 
     def init_weights(self):
         weights = []

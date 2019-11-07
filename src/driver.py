@@ -27,24 +27,49 @@ def run_rbf_network(data_set_name, data_opener):
         output_values = RBFNN(center_data, test_data, train_data, outputs, learning_rate).run_rbfnn()
 
 
-def run_mfnn_classification(data_set, classes, layers, learning_rate, momentum):
-    folds = data_set.validation_folds(10)
-    for fold_i, fold in enumerate(folds):
-        test = fold['test']
-        train, validation = fold['train'].partition(.8)
-        mfnn = MFNN(train, validation, layers, learning_rate, momentum, 100, classes)
-        mfnn.train()
-        print(mfnn.get_accuracy(test))
+def run_mfnn_classification(data_set, classes, learning_rate, momentum, convergence_size):
+    # Standard parameters to run on the data_set
+    num_folds = 10
+    size_inputs = len(data_set.attr_cols)
+    num_hidden_layers = [0, 1, 2]
+    size_outputs = len(classes)
+    size_hidden_layers = math.floor((size_inputs + size_outputs) / 2)
+    folds = data_set.validation_folds(num_folds)
+    for hidden_layer in num_hidden_layers:
+        layers = [size_hidden_layers] * (hidden_layer + 2)
+        layers[0], layers[-1] = size_inputs, size_outputs
+        print("Network " + str(layers))
+        fold_average = []
+        for fold_i, fold in enumerate(folds):
+            test = fold['test']
+            train, validation = fold['train'].partition(.8)
+            mfnn = MFNN(train, validation, layers, learning_rate, momentum, convergence_size, classes)
+            mfnn.train()
+            fold_average.append(mfnn.get_accuracy(test))
+            print("\t Fold: " + str(fold_i+1) + " - Accuracy: " + str(mfnn.get_accuracy(test)))
+        print("Average Accuracy: " + str(sum(fold_average) / num_folds))
 
 
-def run_mfnn_regression(data_set, layers, learning_rate, momentum):
-    folds = data_set.validation_folds(10)
-    for fold_i, fold in enumerate(folds):
-        test = fold['test']
-        train, validation = fold['train'].partition(.8)
-        mfnn = MFNN(train, validation, layers, learning_rate, momentum, 100, None)
-        mfnn.train()
-        print(mfnn.get_error(test))
+def run_mfnn_regression(data_set, learning_rate, momentum, convergence_size):
+    num_folds = 10
+    size_inputs = len(data_set.attr_cols)
+    num_hidden_layers = [0, 1, 2]
+    size_hidden_layers = math.floor((size_inputs + 1) / 2)
+
+    folds = data_set.validation_folds(num_folds)
+    for hidden_layers in num_hidden_layers:
+        layers = [size_hidden_layers] * (hidden_layers + 2)
+        layers[0], layers[-1] = size_inputs, 1
+        print("Network " + str(layers))
+        fold_average = []
+        for fold_i, fold in enumerate(folds):
+            test = fold['test']
+            train, validation = fold['train'].partition(.8)
+            mfnn = MFNN(train, validation, layers, learning_rate, momentum, convergence_size, None)
+            mfnn.train()
+            fold_average.append(mfnn.get_error(test))
+            print("\t Fold: " + str(fold_i+1) + " - Error: " + str(mfnn.get_error(test)))
+        print("Average Error: " + str(sum(fold_average)/num_folds))
 
 
 def test_classification():
@@ -68,28 +93,50 @@ def test_regression():
     multilayer.train()
 
 
-def main():
-    abalone_data = d.get_abalone_data("../data/abalone.data")
-    car_data = d.get_car_data("../data/car.data")
-    segmentation_data = d.get_segmentation_data("../data/segmentation.data")
-
+def run_mfnn_regression_data_sets(learning_rate, momentum, convergence_size):
     forest_fires_data = d.get_forest_fires_data("../data/forestfires.data")
     machine_data = d.get_machine_data("../data/machine.data")
     wine_data = d.get_wine_data("../data/winequality.data")
 
-    # test_regression()
+    print("Forest Fire Data")
+    run_mfnn_regression(forest_fires_data, learning_rate, momentum, convergence_size)
+    print("Machine Data")
+    run_mfnn_regression(machine_data, learning_rate, momentum, convergence_size)
+    print("Wine Data")
+    run_mfnn_regression(wine_data, learning_rate, momentum, convergence_size)
+
+
+def run_mfnn_classification_data_sets(learning_rate, momentum, convergence_size):
+    abalone_data = d.get_abalone_data("../data/abalone.data")
+    car_data = d.get_car_data("../data/car.data")
+    segmentation_data = d.get_segmentation_data("../data/segmentation.data")
+
+
+    # TODO: Find the class list for abalone data
+    # print("Abalone Data")
+    # run_mfnn_classification(abalone_data, ["unacc", "acc", "good", "vgood"], learning_rate, momentum, convergence_size)
+    print("Car data")
+    run_mfnn_classification(car_data, ["unacc", "acc", "good", "vgood"], learning_rate, momentum, convergence_size)
+    # TODO: Find the class list for segmenation_data
+    # print("Segmentation Data")
+    # run_mfnn_classification(segmentation_data, ["unacc", "acc", "good", "vgood"], learning_rate, momentum, convergence_size)
+
+
+def main():
+    learning_rate = 0.001
+    momentum = 0.2
+    convergence_size = 100
+
+    # run_mfnn_regression_data_sets(learning_rate, momentum, convergence_size)
+    run_mfnn_classification_data_sets(learning_rate, momentum, convergence_size)
+
     # test_classification()
     # We can run the RBF network using the following helper function:
     # run_rbf_network("segmentation-eknn", d.get_segmentation_data)
-
-    # MFNN Classifications
-    # run_mfnn_classification(car_data, ["unacc", "acc", "good", "vgood"], [6, 10, 4], 1, 0.01)
-
     # MFNN Regressions
     # run_mfnn_regression(wine_data, [11, 5, 1], .05, 0.1)
-    run_mfnn_regression(machine_data, [6, 2, 1], .001, .2)
+    # run_mfnn_regression(machine_data, [6, 2, 1], .001, .2)
     # run_mfnn_regression(forest_fires_data, [12, 10, 1], .01, 0.1)
-
 
 
 main()

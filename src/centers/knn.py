@@ -11,8 +11,21 @@ class KNN:
     # calls to run.
     def __init__(self, training_data, k):
         self.training_data = training_data.copy()
+        self.dist = self.get_dist_matrix(self.training_data)
         self.k = k
         self.last_nearest_neighbors = None
+
+    def get_dist_matrix(self, data):
+        print("getting dist matrix")
+        dist = {}
+        for ex1 in data.data:
+            dist[ex1] = {}
+            for ex2 in data.data:
+                if ex1 is ex2:
+                    continue
+                dist[ex1][ex2] = self.training_data.distance(ex1, ex2)
+        print("finished dist matrix")
+        return dist
 
     # Returns a list of training examples that are the k-closest neighbors to the given observation.
     def find_closest_neighbors(self, observation):
@@ -24,7 +37,11 @@ class KNN:
         max_index = 0
         # Iterate across each example in the training data...
         for example in self.training_data.data:
-            dist = self.training_data.distance(example, observation)
+            dist = None
+            if example in self.dist and observation in self.dist[example]:
+                dist = self.dist[example][observation]
+            else:
+                dist = self.training_data.distance(example, observation)
             # ...filling in any None values in k_smallest or replacing any examples with larger distances.
             if k_smallest[max_index] is None or k_smallest[max_index][0] > dist:
                 k_smallest[max_index] = (dist, example)

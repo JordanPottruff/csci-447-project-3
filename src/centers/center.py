@@ -3,7 +3,7 @@
 
 from src.centers.edited_knn import EditedKNN
 from src.centers.k_means import KMeans
-import src.data.data as d
+import src.data.data_set as d
 import math
 
 
@@ -54,13 +54,13 @@ def run_eknn():
     abalone_k = math.ceil(math.sqrt(len(abalone_data.data)))
     save_edited_knn_clusters(abalone_data, abalone_k, "abalone")
 
-    car_data = d.get_car_data("../../data/car.data")
-    car_k = math.ceil(math.sqrt(len(car_data.data)))
-    save_edited_knn_clusters(car_data, car_k, "car")
-
-    segmentation_data = d.get_segmentation_data("../../data/segmentation.data")
-    segmentation_k = math.ceil(math.sqrt(len(segmentation_data.data)))
-    save_edited_knn_clusters(segmentation_data, segmentation_k, "segmentation")
+    # car_data = d.get_car_data("../../data/car.data")
+    # car_k = math.ceil(math.sqrt(len(car_data.data)))
+    # save_edited_knn_clusters(car_data, car_k, "car")
+    #
+    # segmentation_data = d.get_segmentation_data("../../data/segmentation.data")
+    # segmentation_k = math.ceil(math.sqrt(len(segmentation_data.data)))
+    # save_edited_knn_clusters(segmentation_data, segmentation_k, "segmentation")
 
 
 def run_kmeans():
@@ -89,5 +89,5 @@ def run_kmeans():
     save_k_means(wine_data, wine_k, "winequality")
 
 
-# run_eknn()
-run_kmeans()
+run_eknn()
+# run_kmeans()

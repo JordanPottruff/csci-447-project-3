@@ -35,7 +35,7 @@ def read_file(filename):
     empty_removed = []
     for line in data:
         if line:
-            empty_removed.append(line)
+            empty_removed.append(tuple(line))
     return empty_removed
 
 

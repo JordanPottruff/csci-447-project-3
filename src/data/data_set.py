@@ -154,8 +154,8 @@ class DataSet:
         max_distance = 0
         idx = 0
         starter_row = self.data[idx]
-        while idx < len(self.data)-2:
-            for i in range(idx+1, len(self.data)-1):
+        while idx < len(self.data)-1:
+            for i in range(idx+1, len(self.data)):
                 # Calculate distance between starter_row
                 distance = self.distance(starter_row, self.data[i])
                 if distance > max_distance:
@@ -308,18 +308,26 @@ def get_wine_data(file_name, normalize=True):
     return wine_data
 
 
-# Gets test_set data
 def get_classification_test_data():
-    data = util.read_file(CLASSIFICATION_TEST_DATA_FILE)
-    test_data = DataSet(data, [0, 1], 2, CLASSIFICATION_TEST_DATA_FILE)
+    return get_classification_test_data(CLASSIFICATION_TEST_DATA_FILE)
+
+
+# Gets test_set data
+def get_classification_test_data(file_name):
+    data = util.read_file(file_name)
+    test_data = DataSet(data, [0, 1], 2, file_name)
     test_data.convert_to_float([0, 1, 2])
     return test_data
 
 
 def get_regression_test_data():
-    data = util.read_file(REGRESSION_TEST_DATA_FILE)
-    test_data = DataSet(data, [0, 1], 2, REGRESSION_TEST_DATA_FILE)
+    return get_regression_test_data(REGRESSION_TEST_DATA_FILE)
+
+
+def get_regression_test_data(file_name):
+    data = util.read_file(file_name)
+    test_data = DataSet(data, [0, 1], 2, file_name)
     test_data.remove_header(1)
     test_data.convert_to_float([0, 1, 2])
-    test_data.normalize_z_score([0, 1])
+    # test_data.normalize_z_score([0, 1])
     return test_data

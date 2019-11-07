@@ -159,7 +159,6 @@ class MFNN:
         if not self.is_regression():
             delta = delta * af.sigmoid_prime(activation[-1])
         delta_weights[-1] = np.outer(delta, activation[-2])
-
         # Hidden Layer
         for i in range(n-2, 0, -1):
             previous_activation = activation[i-1]

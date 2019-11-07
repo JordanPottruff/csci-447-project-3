@@ -52,11 +52,12 @@ class RBFNN:
                 activations.append(gaussian_rbf)
                 # Weights time the output of activation function
             
-            F = np.dot(self.weights, np.dot(self.weights, activations))
+            F = np.dot(self.weights, activations)
             # Calculate Error
-            # Output Layer
+            print(F)
+            #self.weights = self.weights + self.learning_rate * (yi - activations) * gaussian_rbf
             
             
-            self.weights = self.weights - self.learning_rate * activations * error
+            #self.weights = self.weights - self.learning_rate * activations * error
             
         #return predictions

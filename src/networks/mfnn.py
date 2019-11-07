@@ -1,7 +1,7 @@
 import numpy as np
 import random
 import math
-import src.data.data_set as data
+import src.activation_functions as af
 
 
 class MFNN:
@@ -64,20 +64,20 @@ class MFNN:
                     old_error = sum(convergence_error[:self.convergence_size])
                     new_error = sum(convergence_error[self.convergence_size:])
                     difference = old_error - new_error
-                    print("Difference: " + str(difference))
-                    if old_error - new_error < 0.0001:
+                    if difference < 0.0001:
+                        print("Difference: " + str(difference))
                         return
             else:
                 accuracy = self.get_validation_accuracy()
                 print("Accuracy: " + str(accuracy))
                 convergence_accuracy.append(accuracy)
-                if len(convergence_error) > self.convergence_size*2:
+                if len(convergence_accuracy) > self.convergence_size*2:
                     convergence_accuracy.pop(0)
                     old_accuracy = sum(convergence_accuracy[:self.convergence_size])
                     new_accuracy = sum(convergence_accuracy[self.convergence_size:])
-                    difference = old_accuracy - new_accuracy
-                    print("Difference: " + str(difference))
-                    if old_accuracy - new_accuracy < 0.0001:
+                    difference = new_accuracy - old_accuracy
+                    if difference < 0.0001:
+                        print("Difference: " + str(difference))
                         return
 
             random.shuffle(numpy_training_data)
@@ -123,14 +123,14 @@ class MFNN:
         return weights
 
     def get_activation(self, example: np.ndarray):
-        inputs = np.append(example, sigmoid(1))
+        inputs = np.append(example, af.sigmoid(1))
         activation = [inputs]
         for i in range(len(self.weights)):
             inputs = np.dot(self.weights[i], inputs)
             if not (self.is_regression() and i == len(self.weights) - 1):
-               inputs = sigmoid(inputs)
+               inputs = af.sigmoid(inputs)
             if i < len(self.weights) - 1:
-                inputs = np.append(inputs, sigmoid(1))
+                inputs = np.append(inputs, af.sigmoid(1))
             activation.append(inputs)
         return activation
 
@@ -142,33 +142,22 @@ class MFNN:
         activation = self.get_activation(example)
 
         # Output Layer
-        delta = cost_prime(expected, activation[-1])
+        delta = af.cost_prime(expected, activation[-1])
         if not self.is_regression():
-            delta = delta * sigmoid_prime(activation[-1])
+            delta = delta * af.sigmoid_prime(activation[-1])
         delta_weights[-1] = np.outer(delta, activation[-2])
 
         # Hidden Layer
         for i in range(n-2, 0, -1):
-            previous_activiation = activation[i-1]
+            previous_activation = activation[i-1]
             downstream_weights = self.weights[i].T
             if i < n-2:
                 delta = delta[:-1]
-            delta = np.dot(downstream_weights, delta) * sigmoid_prime(activation[i])
-            delta_weights[i-1] = np.delete(np.outer(delta, previous_activiation), -1, 0)
+            delta = np.dot(downstream_weights, delta) * af.sigmoid_prime(activation[i])
+            delta_weights[i-1] = np.delete(np.outer(delta, previous_activation), -1, 0)
         return delta_weights
 
     def run(self, example):
         return self.get_activation(example)[-1]
 
 
-def sigmoid_prime(sigmoid):
-    return sigmoid*(1-sigmoid)
-
-
-def cost_prime(expected, actual):
-    return actual - expected
-
-
-def sigmoid(x):
-    """The sigmoid function."""
-    return 1.0/(1.0+np.exp(-x))

@@ -5,7 +5,7 @@ import src.data.data_set as data
 
 
 class MFNN:
-    def __init__(self, training_data, validation_data, layer_size, learning_rate, momentum, classes=None):
+    def __init__(self, training_data, validation_data, layer_size, learning_rate, momentum, convergence_size, classes=None):
         self.training_data = training_data
         self.validation_data = validation_data
         self.num_layers = len(layer_size)
@@ -13,6 +13,7 @@ class MFNN:
         self.weights = self.init_weights()
         self.learning_rate = learning_rate
         self.momentum = momentum
+        self.convergence_size = convergence_size
         self.class_dict = None if classes is None else {cls: index for index, cls in enumerate(classes)}
 
     def is_regression(self):
@@ -58,11 +59,10 @@ class MFNN:
                 error = self.get_validation_error()
                 print("Error: " + str(error))
                 convergence_error.append(error)
-                m = 50 # Sample size of convergence list
-                if len(convergence_error) > m*2:
+                if len(convergence_error) > self.convergence_size*2:
                     convergence_error.pop(0)
-                    old_error = sum(convergence_error[:m])
-                    new_error = sum(convergence_error[m:])
+                    old_error = sum(convergence_error[:self.convergence_size])
+                    new_error = sum(convergence_error[self.convergence_size:])
                     difference = old_error - new_error
                     print("Difference: " + str(difference))
                     if old_error - new_error < 0.0001:
@@ -71,10 +71,10 @@ class MFNN:
                 accuracy = self.get_validation_accuracy()
                 print("Accuracy: " + str(accuracy))
                 convergence_accuracy.append(accuracy)
-                if len(convergence_error) > n:
+                if len(convergence_error) > self.convergence_size*2:
                     convergence_accuracy.pop(0)
-                    old_accuracy = sum(convergence_accuracy[:m])
-                    new_accuracy = sum(convergence_accuracy[m:])
+                    old_accuracy = sum(convergence_accuracy[:self.convergence_size])
+                    new_accuracy = sum(convergence_accuracy[self.convergence_size:])
                     difference = old_accuracy - new_accuracy
                     print("Difference: " + str(difference))
                     if old_accuracy - new_accuracy < 0.0001:

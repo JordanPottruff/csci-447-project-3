@@ -60,7 +60,7 @@ def run_eknn():
     #
     # segmentation_data = d.get_segmentation_data("../../data/segmentation.data")
     # segmentation_k = math.ceil(math.sqrt(len(segmentation_data.data)))
-    # save_edited_knn_clusters(segmentation_data, segmentation_k, "segmentation")
+    # save_edited_knn_clusters(segmentation_data, segmentation_k, "segmentation2")
 
 
 def run_kmeans():

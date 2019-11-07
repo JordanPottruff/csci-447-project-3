@@ -44,7 +44,7 @@ def test_regression():
     validation_set = training_set.copy()
     validation_set.data *= 10
 
-    multilayer = MFNN(training_set, validation_set, [2, 10, 1], 1, None, None)
+    multilayer = MFNN(training_set, validation_set, [2, 10, 1], 1, 0.01, None)
     multilayer.train()
 
 

@@ -5,7 +5,7 @@ import src.data.data_set as data
 
 
 class MFNN:
-    def __init__(self, training_data, validation_data, layer_size, learning_rate, momentum, classes=None):
+    def __init__(self, training_data, validation_data, layer_size, learning_rate, momentum, convergence_size, classes=None):
         self.training_data = training_data
         self.validation_data = validation_data
         self.num_layers = len(layer_size)
@@ -13,6 +13,7 @@ class MFNN:
         self.weights = self.init_weights()
         self.learning_rate = learning_rate
         self.momentum = momentum
+        self.convergence_size = convergence_size
         self.class_dict = None if classes is None else {cls: index for index, cls in enumerate(classes)}
 
     def is_regression(self):
@@ -50,34 +51,59 @@ class MFNN:
         numpy_training_data = self.training_data.get_numpy_list()
 
         mini_batch_size = 4
-        for i in range(1000000):
+        convergence_error = []
+        convergence_accuracy = []
+        while True:
             # print(self.weights)
             if self.is_regression():
-                print("Error: " + str(self.get_validation_error()))
+                error = self.get_validation_error()
+                print("Error: " + str(error))
+                convergence_error.append(error)
+                if len(convergence_error) > self.convergence_size*2:
+                    convergence_error.pop(0)
+                    old_error = sum(convergence_error[:self.convergence_size])
+                    new_error = sum(convergence_error[self.convergence_size:])
+                    difference = old_error - new_error
+                    print("Difference: " + str(difference))
+                    if old_error - new_error < 0.0001:
+                        return
             else:
-                print("Accuracy: " + str(self.get_validation_accuracy()))
+                accuracy = self.get_validation_accuracy()
+                print("Accuracy: " + str(accuracy))
+                convergence_accuracy.append(accuracy)
+                if len(convergence_error) > self.convergence_size*2:
+                    convergence_accuracy.pop(0)
+                    old_accuracy = sum(convergence_accuracy[:self.convergence_size])
+                    new_accuracy = sum(convergence_accuracy[self.convergence_size:])
+                    difference = old_accuracy - new_accuracy
+                    print("Difference: " + str(difference))
+                    if old_accuracy - new_accuracy < 0.0001:
+                        return
+
             random.shuffle(numpy_training_data)
             mini_batches = [numpy_training_data[k:k + mini_batch_size] for k in range(0, len(numpy_training_data), mini_batch_size)]
+            prev_weights = None
             for mini_batch in mini_batches:
-                self.train_mini_batch(mini_batch)
+                prev_weights = self.train_mini_batch(mini_batch, prev_weights)
 
-    def train_mini_batch(self, mini_batch):
+    def train_mini_batch(self, mini_batch, prev_weights):
+        total_dw = [np.zeros(w.shape) for w in self.weights]
         for example_array, expected_class in mini_batch:
             expected_array = self.get_class_array(expected_class)
             delta_weights = self.backpropagation(example_array, expected_array)
             for i in range(len(self.weights)):
-                self.weights[i] -= (self.learning_rate/len(mini_batch)) * delta_weights[i]
+                delta_weights[i] *= (self.learning_rate / len(mini_batch))
+                if prev_weights is not None:
+                    delta_weights[i] -= self.momentum * prev_weights[i]
+                self.weights[i] -= delta_weights[i]
+                total_dw[i] += delta_weights[i]
+        return total_dw
 
     def get_validation_error(self):
         numpy_validation_data = self.validation_data.get_numpy_list()
         squared_sum = 0
         for example_array, expected_class in numpy_validation_data:
             output = self.run(example_array)
-            print("Example: " + str(example_array))
-            print("Validate: ")
-            print(output)
-            print(expected_class)
-            print(self.weights)
             squared_sum += (self.get_class_value(output) - expected_class)**2
         return math.sqrt(squared_sum)
 
@@ -101,8 +127,8 @@ class MFNN:
         activation = [inputs]
         for i in range(len(self.weights)):
             inputs = np.dot(self.weights[i], inputs)
-            if not self.is_regression() or i != len(self.weights) - 1:
-                inputs = sigmoid(inputs)
+            if not (self.is_regression() and i == len(self.weights) - 1):
+               inputs = sigmoid(inputs)
             if i < len(self.weights) - 1:
                 inputs = np.append(inputs, sigmoid(1))
             activation.append(inputs)
@@ -125,7 +151,6 @@ class MFNN:
         for i in range(n-2, 0, -1):
             previous_activiation = activation[i-1]
             downstream_weights = self.weights[i].T
-
             if i < n-2:
                 delta = delta[:-1]
             delta = np.dot(downstream_weights, delta) * sigmoid_prime(activation[i])
@@ -147,24 +172,3 @@ def cost_prime(expected, actual):
 def sigmoid(x):
     """The sigmoid function."""
     return 1.0/(1.0+np.exp(-x))
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

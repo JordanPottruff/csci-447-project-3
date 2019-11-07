@@ -22,15 +22,14 @@ class DataSet:
     # - class_col: an int that is the index of the column representing the class value.
     # - num_classes: the number of classes in the data (including classes that may not be present in the data list).
     # - filename: (optional) string denoting the name of the file the data is originally sourced from.
-    def __init__(self, data: list, attr_cols: list, class_col: int, num_classes: int, filename=""):
+    def __init__(self, data: list, attr_cols: list, class_col: int, filename=""):
         self.data = data
         self.attr_cols = attr_cols
         self.class_col = class_col
-        self.num_classes = num_classes
         self.filename = filename
 
     def copy(self):
-        return DataSet(self.data.copy(), self.attr_cols.copy(), self.class_col, self.num_classes, self.filename)
+        return DataSet(self.data.copy(), self.attr_cols.copy(), self.class_col, self.filename)
 
     def get_data(self):
         return self.data.copy()
@@ -120,12 +119,12 @@ class DataSet:
 
         folds = [{} for i in range(n)]
         for i in range(n):
-            folds[i]['test'] = DataSet(sections[i], self.attr_cols, self.class_col, self.num_classes)
+            folds[i]['test'] = DataSet(sections[i], self.attr_cols, self.class_col)
             train = []
             for j in range(n):
                 if i != j:
                     train += sections[j]
-            folds[i]['train'] = DataSet(train, self.attr_cols, self.class_col, self.num_classes)
+            folds[i]['train'] = DataSet(train, self.attr_cols, self.class_col)
         return folds
 
     # Used to randomly sample our data to only be of length k.
@@ -190,7 +189,7 @@ def get_abalone_data():
 # Gets the abalone data set.
 def get_abalone_data(file_name, normalize=True):
     data = util.read_file(file_name)
-    abalone_data = DataSet(data, list(range(1, 8)), 8, 29, file_name)
+    abalone_data = DataSet(data, list(range(1, 8)), 8, file_name)
     # Convert attribute columns to floats
     abalone_data.convert_to_float(list(range(1, 9)))
     # Normalize values
@@ -208,7 +207,7 @@ def get_car_data():
 # Gets the car data set.
 def get_car_data(file_name, normalize=True):
     data = util.read_file(file_name)
-    car_data = DataSet(data, list(range(0, 6)), 6, 4, file_name)
+    car_data = DataSet(data, list(range(0, 6)), 6, file_name)
     # Convert attribute columns to numeric scheme
     car_data.convert_str_attribute(0, {'low': 0, 'med': 1, 'high': 2, 'vhigh': 3})
     car_data.convert_str_attribute(1, {'low': 0, 'med': 1, 'high': 2, 'vhigh': 3})
@@ -231,7 +230,7 @@ def get_forest_fires_data():
 # Gets the forest fires data set.
 def get_forest_fires_data(file_name, normalize=True):
     data = util.read_file(file_name)
-    forest_fires_data = DataSet(data, [0, 1] + list(range(4, 12)), 12, 1, file_name)
+    forest_fires_data = DataSet(data, [0, 1] + list(range(4, 12)), 12, file_name)
     # Remove the first line, which is the header info.
     forest_fires_data.remove_header(1)
     # Convert applicable columns to floats, including the class column.
@@ -252,7 +251,7 @@ def get_machine_data():
 def get_machine_data(file_name, normalize=True):
     data = util.read_file(file_name)
     # There is another final column but we probably want to exclude it.
-    machine_data = DataSet(data, list(range(2, 8)), 8, 1, file_name)
+    machine_data = DataSet(data, list(range(2, 8)), 8, file_name)
     # Convert all columns except the first two to floats, including the class column.
     machine_data.convert_to_float(list(range(2, 9)))
     # Normalize values.
@@ -274,7 +273,7 @@ def get_segmentation_data(file_name, normalize=True):
     #  * Attribute #7, vedge-sd, removed because it is a standard deviation.
     #  * Attribute #9, hedge-sd, removed for same reason.
     attr_cols = [1, 2, 3, 4, 5, 6, 8, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19]
-    segmentation_data = DataSet(data, attr_cols, 0, 7, SEGMENTATION_DATA_FILE)
+    segmentation_data = DataSet(data, attr_cols, 0, file_name)
     # Remove the first 5 lines, which is reserved for the header.
     segmentation_data.remove_header(5)
     # Convert all attribute columns to numeric values.
@@ -294,7 +293,7 @@ def get_wine_data():
 # Gets the wine data set.
 def get_wine_data(file_name, normalize=True):
     data = util.read_file(file_name)
-    wine_data = DataSet(data, list(range(0, 11)), 11, 1, file_name)
+    wine_data = DataSet(data, list(range(0, 11)), 11, file_name)
     # Convert all attribute columns to numeric values.
     wine_data.convert_to_float(list(range(0, 12)))
     # Normalize values.
@@ -308,14 +307,14 @@ def get_wine_data(file_name, normalize=True):
 # Gets test_set data
 def get_classification_test_data():
     data = util.read_file(CLASSIFICATION_TEST_DATA_FILE)
-    test_data = DataSet(data, [0, 2], 2, 2, CLASSIFICATION_TEST_DATA_FILE)
+    test_data = DataSet(data, [0, 1], 2, CLASSIFICATION_TEST_DATA_FILE)
     test_data.convert_to_float([0, 1, 2])
     return test_data
 
 
 def get_regression_test_data():
     data = util.read_file(REGRESSION_TEST_DATA_FILE)
-    test_data = DataSet(data, [0, 2], 2, 2, REGRESSION_TEST_DATA_FILE)
+    test_data = DataSet(data, [0, 1], 2, REGRESSION_TEST_DATA_FILE)
     test_data.remove_header(1)
     test_data.convert_to_float([0, 1, 2])
     test_data.normalize_z_score([0, 1])

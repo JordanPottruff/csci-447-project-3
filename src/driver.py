@@ -32,9 +32,9 @@ def test_classification():
     training_set.data *= 12
     validation_set = training_set.copy()
     validation_set.data *= 10
-
-    multilayer = MFNN(training_set, validation_set, [2, 2, 2], 1, None, [0, 1])
-    multilayer.train()
+    # TODO: Jordan fix this
+    # multilayer = MFNN(training_set, validation_set, [2, 2, 2], 1, 0.5, 100, None, [0, 1])
+    # multilayer.train()
 
 
 def test_regression():
@@ -44,12 +44,13 @@ def test_regression():
     validation_set = training_set.copy()
     validation_set.data *= 10
 
-    multilayer = MFNN(training_set, validation_set, [2, 5, 5, 1], 10, None, None)
+    multilayer = MFNN(training_set, validation_set, [2, 10, 1], 1, 0.01, 100, None)
     multilayer.train()
 
 
 def main():
     test_regression()
+    # test_classification()
     # We can run the RBF network using the following helper function:
     # run_rbf_network("segmentation-eknn", d.get_segmentation_data)
 

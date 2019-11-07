@@ -335,6 +335,6 @@ def get_wine_data(file_name, normalize=True):
 # Gets test_set data
 def get_test_data():
     data = util.read_file(TEST_DATA_FILE)
-    test_data = Data(data, 2, [0, 2], TEST_DATA_FILE)
+    test_data = Data(data, 2, [0, 1], TEST_DATA_FILE)
     test_data.convert_to_float([0, 1, 2])
     return test_data

@@ -111,19 +111,16 @@ def run_mfnn_classification_data_sets(learning_rate, momentum, convergence_size)
     car_data = d.get_car_data("../data/car.data")
     segmentation_data = d.get_segmentation_data("../data/segmentation.data")
 
-
-    # TODO: Find the class list for abalone data
     # print("Abalone Data")
-    # run_mfnn_classification(abalone_data, ["unacc", "acc", "good", "vgood"], learning_rate, momentum, convergence_size)
-    print("Car data")
-    run_mfnn_classification(car_data, ["unacc", "acc", "good", "vgood"], learning_rate, momentum, convergence_size)
-    # TODO: Find the class list for segmenation_data
-    # print("Segmentation Data")
-    # run_mfnn_classification(segmentation_data, ["unacc", "acc", "good", "vgood"], learning_rate, momentum, convergence_size)
+    # run_mfnn_classification(abalone_data, [float(i) for i in range(1, 30)], learning_rate, momentum, convergence_size)
+    # print("Car data")
+    # run_mfnn_classification(car_data, ["unacc", "acc", "good", "vgood"], learning_rate, momentum, convergence_size)
+    print("Segmentation Data")
+    run_mfnn_classification(segmentation_data, ["BRICKFACE", "SKY", "FOLIAGE", "CEMENT", "WINDOW", "PATH", "GRASS"], learning_rate, momentum, convergence_size)
 
 
 def main():
-    learning_rate = 0.001
+    learning_rate = 0.00001
     momentum = 0.2
     convergence_size = 100
 

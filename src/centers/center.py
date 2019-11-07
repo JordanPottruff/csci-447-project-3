@@ -36,7 +36,8 @@ def save_k_means(data, k, data_file_name):
         test = fold['test']
         train = fold['train']
         kmeans = KMeans(train, k)
-        centers = kmeans.centroids
+        centers = test.copy()
+        centers.data = kmeans.centroids
 
         # We don't need to worry about removing centers from the original training data since the clusters are not
         # points from the data.

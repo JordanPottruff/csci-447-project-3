@@ -1,6 +1,6 @@
 import math
 import numpy as np
-from Project_3.src.data import data as d
+from src.data import data as d
 from src import activation_functions as af
 # hidden nodes is first ex 4
 # input nodes is second for matrix ex 3
@@ -28,6 +28,7 @@ class RBFNN:
     def training(self):
         for epoch in range(self.epochs):
             for i in range(self.batch_size):
+                pass
 
 
     def get_rbf_activation(self, input, center, stdrd_dev):
@@ -52,11 +53,12 @@ class RBFNN:
                 activations.append(gaussian_rbf)
                 # Weights time the output of activation function
             
-            F = np.dot(self.weights, np.dot(self.weights, activations))
+            F = np.dot(self.weights, activations)
             # Calculate Error
-            # Output Layer
+            print(F)
+            #self.weights = self.weights + self.learning_rate * (yi - activations) * gaussian_rbf
             
             
-            self.weights = self.weights - self.learning_rate * activations * error
+            #self.weights = self.weights - self.learning_rate * activations * error
             
         #return predictions

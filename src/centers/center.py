@@ -36,7 +36,8 @@ def save_k_means(data, k, data_file_name):
         test = fold['test']
         train = fold['train']
         kmeans = KMeans(train, k)
-        centers = kmeans.centroids
+        centers = test.copy()
+        centers.data = kmeans.centroids
 
         # We don't need to worry about removing centers from the original training data since the clusters are not
         # points from the data.
@@ -59,7 +60,7 @@ def run_eknn():
     #
     # segmentation_data = d.get_segmentation_data("../../data/segmentation.data")
     # segmentation_k = math.ceil(math.sqrt(len(segmentation_data.data)))
-    # save_edited_knn_clusters(segmentation_data, segmentation_k, "segmentation")
+    # save_edited_knn_clusters(segmentation_data, segmentation_k, "segmentation2")
 
 
 def run_kmeans():

@@ -27,13 +27,24 @@ def run_rbf_network(data_set_name, data_opener):
         output_values = RBFNN(center_data, test_data, train_data, outputs, learning_rate).run_rbfnn()
 
 
-def run_mfnn_network(data_set, classes, layers, learning_rate, momentum):
+def run_mfnn_classification(data_set, classes, layers, learning_rate, momentum):
     folds = data_set.validation_folds(10)
     for fold_i, fold in enumerate(folds):
         test = fold['test']
         train, validation = fold['train'].partition(.8)
-        mfnn = MFNN(train, validation, layers, learning_rate, momentum, classes)
+        mfnn = MFNN(train, validation, layers, learning_rate, momentum, 100, classes)
+        mfnn.train()
         print(mfnn.get_accuracy(test))
+
+
+def run_mfnn_regression(data_set, layers, learning_rate, momentum):
+    folds = data_set.validation_folds(10)
+    for fold_i, fold in enumerate(folds):
+        test = fold['test']
+        train, validation = fold['train'].partition(.8)
+        mfnn = MFNN(train, validation, layers, learning_rate, momentum, 100, None)
+        mfnn.train()
+        print(mfnn.get_error(test))
 
 
 def test_classification():
@@ -58,11 +69,27 @@ def test_regression():
 
 
 def main():
+    abalone_data = d.get_abalone_data("../data/abalone.data")
+    car_data = d.get_car_data("../data/car.data")
+    segmentation_data = d.get_segmentation_data("../data/segmentation.data")
+
+    forest_fires_data = d.get_forest_fires_data("../data/forestfires.data")
+    machine_data = d.get_machine_data("../data/machine.data")
+    wine_data = d.get_wine_data("../data/winequality.data")
+
     # test_regression()
     # test_classification()
     # We can run the RBF network using the following helper function:
     # run_rbf_network("segmentation-eknn", d.get_segmentation_data)
-    car_data = d.get_car_data("../data/car.data")
-    run_mfnn_network(car_data, ["unacc", "acc", "good", "v-good"], [6, 10, 4], 1, 0.01)
+
+    # MFNN Classifications
+    # run_mfnn_classification(car_data, ["unacc", "acc", "good", "vgood"], [6, 10, 4], 1, 0.01)
+
+    # MFNN Regressions
+    # run_mfnn_regression(wine_data, [11, 5, 1], .05, 0.1)
+    run_mfnn_regression(machine_data, [6, 2, 1], .001, .2)
+    # run_mfnn_regression(forest_fires_data, [12, 10, 1], .01, 0.1)
+
+
 
 main()

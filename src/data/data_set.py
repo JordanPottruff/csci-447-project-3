@@ -99,8 +99,8 @@ class DataSet:
     # observations should fall into the first 2D list.
     def partition(self, first_percentage):
         cutoff = math.floor(first_percentage * len(self.data))
-        first = DataSet(self.data[:cutoff], self.class_col, self.attr_cols)
-        second = DataSet(self.data[cutoff:], self.class_col, self.attr_cols)
+        first = DataSet(self.data[:cutoff], self.attr_cols, self.class_col)
+        second = DataSet(self.data[cutoff:], self.attr_cols, self.class_col)
         return first, second
 
     # Creates n-"folds" of our data set, which can be used for cross validation. Each fold has a test set, containing
@@ -230,14 +230,18 @@ def get_forest_fires_data():
 # Gets the forest fires data set.
 def get_forest_fires_data(file_name, normalize=True):
     data = util.read_file(file_name)
-    forest_fires_data = DataSet(data, [0, 1] + list(range(4, 12)), 12, file_name)
+    forest_fires_data = DataSet(data, list(range(0, 12)), 12, file_name)
     # Remove the first line, which is the header info.
     forest_fires_data.remove_header(1)
+    # Convert string columns (dates) to numerics
+    forest_fires_data.convert_str_attribute(2, {'jan': 1, 'feb': 2, 'mar': 3, 'apr': 4, 'may': 5, 'jun': 6,
+                                                'jul': 7, 'aug': 8, 'sep': 9, 'oct': 10, 'nov': 11, 'dec': 12})
+    forest_fires_data.convert_str_attribute(3, {'mon': 1, 'tue': 2, 'wed': 3, 'thu': 4, 'fri': 5, 'sat': 6, 'sun': 7})
     # Convert applicable columns to floats, including the class column.
-    forest_fires_data.convert_to_float([0, 1] + list(range(4, 13)))
+    forest_fires_data.convert_to_float(list(range(0, 13)))
     # Normalize values.
     if normalize:
-        forest_fires_data.normalize_z_score([0, 1] + list(range(4, 12)))
+        forest_fires_data.normalize_z_score(list(range(0, 12)))
     # Randomly shuffle values.
     forest_fires_data.shuffle()
     return forest_fires_data

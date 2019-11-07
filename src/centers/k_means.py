@@ -107,54 +107,24 @@ class KMeans:
     def calculate_cluster_mean(self, cluster):
         num_cols = len(self.training_data.get_data()[0])
         attr_cols = self.training_data.attr_cols
-        str_attr_cols = self.training_data.get_str_attr_cols()
 
         # If the cluster has to items in it, we return the mean as a random coordinate.
         if len(cluster) == 0:
             return self.generate_random_centroid()
 
-        # The sums and freqs lists are used for calculating the average and mode of numeric and string attributes,
-        # respectively. Both have the same number of columns as our observations, but only the columns corresponding
-        # to string (freqs[i]) or numeric (sums[i]) will be filled in.
+        # The sums and for calculating the average and mode of the attributes.
         sums = [0 for i in range(num_cols)]
-        freqs = [{} for i in range(num_cols)]
 
-        # This section does one of two things:
-        # (1) calculates the sum of numeric attributes (and stores it in the corresponding columns of 'sums'),
-        # (2) calculates the frequency of values in string attributes (and stores it in a dictionary in the freqs list).
+        # This section calculates the sum of each observation's attribute.
         for obs in cluster:
             # We iterate over the attribute columns only (to ignore class and unused columns)
             for attr_col in attr_cols:
-                # If our attribute column is string-valued...
-                if attr_col in str_attr_cols:
-                    # ...then update the frequency table by...
-                    str_val = obs[attr_col]
-                    if str_val in freqs[attr_col]:
-                        # ...incrementing an existing count, if present, or
-                        freqs[attr_col][str_val] += 1
-                    else:
-                        # ...setting the count equal to 1 if value not previously seen.
-                        freqs[attr_col][str_val] = 1
-                else:
-                    # Otherwise, if our column is numeric, we just continue building a sum for that column.
-                    sums[attr_col] += obs[attr_col]
+                sums[attr_col] += obs[attr_col]
 
         # We now calculate the "means", which is an average for numeric columns and the mode for string columns.
         mean = [0 for i in range(num_cols)]
         # We again want to just iterate over the attribute columns instead of all the columns
         for attr_col in attr_cols:
-            # If our attribute column is string-valued...
-            if attr_col in str_attr_cols:
-                # ...we find the most frequent value...
-                freq = freqs[attr_col]
-                max_attr_val = None
-                for attr_val in freq:
-                    if max_attr_val is None or freq[attr_val] > freq[max_attr_val]:
-                        max_attr_val = attr_val
-                # ...and set the mean for this column to be that value.
-                mean[attr_col] = max_attr_val
-            else:
-                # Otherwise, if our column is numeric, we divide the sum by the size of the cluster to get an average.
                 mean[attr_col] = sums[attr_col] / len(cluster)
 
         # Lastly, we return this mean.

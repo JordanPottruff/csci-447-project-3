@@ -89,7 +89,7 @@ def run_eknn():
 
 def run_kmeans():
     abalone_data = d.get_abalone_data("../../data/abalone.data")
-    abalone_k = None
+    abalone_k = 2510
     save_k_means(abalone_data, abalone_k, "abalone")
 
     car_data = d.get_car_data("../../data/car.data")
@@ -115,7 +115,7 @@ def run_kmeans():
 
 def run_pam():
     abalone_data = d.get_abalone_data("../../data/abalone.data")
-    abalone_k = None
+    abalone_k = 2510
     save_pam(abalone_data, abalone_k, "abalone")
 
     car_data = d.get_car_data("../../data/car.data")
@@ -139,5 +139,6 @@ def run_pam():
     save_pam(wine_data, wine_k, "winequality")
 
 
-run_eknn()
+# run_eknn()
 # run_kmeans()
+run_pam()

@@ -3,6 +3,10 @@ import random
 import math
 import src.activation_functions as af
 
+# The amount each new average metric needs to be better than the old average metric for the training process to
+# continue.
+CONVERGENCE_THRESHOLD = .0001
+
 
 class MFNN:
     def __init__(self, training_data, validation_data, layer_size, learning_rate, momentum, convergence_size, classes=None):
@@ -53,43 +57,53 @@ class MFNN:
         mini_batch_size = 4
         convergence_error = []
         convergence_accuracy = []
+        convergence_check = []
+
+        # Each cycle of this while loop is a single epoch. That is, it covers all of the training data (shuffled in
+        # random order and put into mini batches). This loop will break based on the convergence calculation used
+        # immediately below.
         while True:
-            # print(self.weights)
-            if self.is_regression():
-                error = self.get_error(self.validation_data)
-                print("Error: " + str(error))
-                convergence_error.append(error)
-                if len(convergence_error) > self.convergence_size*2:
-                    convergence_error.pop(0)
-                    old_error = sum(convergence_error[:self.convergence_size])
-                    new_error = sum(convergence_error[self.convergence_size:])
-                    difference = old_error - new_error
-                    if difference < 0.0001:
-                        print("Difference: " + str(difference))
+            # Check for convergence by evaluating the past self.convergence_size*2 validation metrics (either accuracy
+            # or error). We exit if the older half of metrics has a better average than the newer half.
+            metric = self.get_error(self.validation_data) if self.is_regression() else \
+                self.get_accuracy(self.validation_data)
+            convergence_check.append(metric)
+            # Wait until the convergence check list has all self.convergence_size*2 items.
+            if len(convergence_check) > self.convergence_size*2:
+                # Remove the oldest metric, to maintain the list's size.
+                convergence_check.pop(0)
+                # The last half of the list are the older metrics.
+                old_metric = sum(convergence_check[:self.convergence_size])
+                # The first half of the list are the newer metrics.
+                new_metric = sum(convergence_check[self.convergence_size:])
+                # We compare the difference in sums. We could use averages, but there is no difference when comparing
+                # the sums or averages since the denominator would be the same size for both.
+                difference = new_metric - old_metric
+                if self.is_regression():
+                    # Error needs to invert the difference, as we are MINIMIZING error.
+                    if -difference < CONVERGENCE_THRESHOLD:
                         return
-            else:
-                accuracy = self.get_accuracy(self.validation_data)
-                print("Accuracy: " + str(accuracy))
-                convergence_accuracy.append(accuracy)
-                if len(convergence_accuracy) > self.convergence_size*2:
-                    convergence_accuracy.pop(0)
-                    old_accuracy = sum(convergence_accuracy[:self.convergence_size])
-                    new_accuracy = sum(convergence_accuracy[self.convergence_size:])
-                    difference = new_accuracy - old_accuracy
-                    if difference < 0.0001:
-                        print("Difference: " + str(difference))
+                else:
+                    # We attempt to MAXIMIZE accuracy for classification data.
+                    if difference < CONVERGENCE_THRESHOLD:
                         return
+
+            # If we are here, then there was no convergence. We therefore need to train on the training data (again). We
+            # first shuffle the training data so that we aren't learning on the exact same mini batches as last time.
             random.shuffle(numpy_training_data)
+            # Now we form the mini batches. Each mini batch is a list of examples.
             mini_batches = [numpy_training_data[k:k + mini_batch_size] for k in range(0, len(numpy_training_data), mini_batch_size)]
-            prev_weights = None
+            # We now perform gradient descent on each mini batch. We also maintain the delta weights from the previous
+            # mini batch so that we can apply momentum to our current delta weight.
+            prev_delta_weights = None
             for mini_batch in mini_batches:
-                prev_weights = self.train_mini_batch(mini_batch, prev_weights)
+                prev_delta_weights = self.train_mini_batch(mini_batch, prev_delta_weights)
 
     def train_mini_batch(self, mini_batch, prev_weights):
         total_dw = [np.zeros(w.shape) for w in self.weights]
         for example_array, expected_class in mini_batch:
             expected_array = self.get_class_array(expected_class)
-            delta_weights = self.backpropagation(example_array, expected_array)
+            delta_weights = self.back_propagation(example_array, expected_array)
             for i in range(len(self.weights)):
                 delta_weights[i] *= (self.learning_rate / len(mini_batch))
                 if prev_weights is not None:
@@ -104,7 +118,7 @@ class MFNN:
         for example_array, expected_class in numpy_data:
             output = self.run(example_array)
             squared_sum += (self.get_class_value(output) - expected_class)**2
-        return math.sqrt(squared_sum)
+        return math.sqrt(squared_sum) / len(numpy_data)
 
     def get_accuracy(self, data_set):
         numpy_data = data_set.get_numpy_list()
@@ -133,7 +147,7 @@ class MFNN:
             activation.append(inputs)
         return activation
 
-    def backpropagation(self, example: np.ndarray, expected: np.ndarray):
+    def back_propagation(self, example: np.ndarray, expected: np.ndarray):
         delta_weights = [np.zeros(w.shape) for w in self.weights]
         n = len(self.layer_size)
 

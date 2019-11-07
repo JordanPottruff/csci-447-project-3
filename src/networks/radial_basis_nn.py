@@ -1,6 +1,6 @@
 import math
 import numpy as np
-from Project_3.src.data import data as d
+from src.data import data as d
 from src import activation_functions as af
 # hidden nodes is first ex 4
 # input nodes is second for matrix ex 3
@@ -28,6 +28,7 @@ class RBFNN:
     def training(self):
         for epoch in range(self.epochs):
             for i in range(self.batch_size):
+                pass
 
 
     def get_rbf_activation(self, input, center, stdrd_dev):

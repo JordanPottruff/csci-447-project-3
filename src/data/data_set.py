@@ -189,12 +189,14 @@ def get_abalone_data():
 # Gets the abalone data set.
 def get_abalone_data(file_name, normalize=True):
     data = util.read_file(file_name)
-    abalone_data = DataSet(data, list(range(1, 8)), 8, file_name)
+    abalone_data = DataSet(data, list(range(0, 8)), 8, file_name)
+    # Convert male, female, infant column to numeric values
+    abalone_data.convert_str_attribute(0, {'I': 0, 'F': 1, 'M': 2})
     # Convert attribute columns to floats
-    abalone_data.convert_to_float(list(range(1, 9)))
+    abalone_data.convert_to_float(list(range(0, 9)))
     # Normalize values
     if normalize:
-        abalone_data.normalize_z_score(list(range(1, 8)))
+        abalone_data.normalize_z_score(list(range(0, 8)))
     # Randomly shuffle values.
     abalone_data.shuffle()
     return abalone_data

@@ -128,15 +128,15 @@ def run_rbfnn_classification_data_sets(center_alg_name):
     car_classes = ["unacc", "acc", "good", "vgood"]
     segmentation_classes = ["BRICKFACE", "SKY", "FOLIAGE", "CEMENT", "WINDOW", "PATH", "GRASS"]
 
-    run_rbfnn_classification("abalone-" + center_alg_name, d.get_abalone_data, abalone_classes, 1, 100)
-    run_rbfnn_classification("car-" + center_alg_name, d.get_car_data, car_classes, 1, 100)
-    run_rbfnn_classification("segmentation-" + center_alg_name, d.get_segmentation_data, segmentation_classes, 1, 100)
+    run_rbfnn_classification("abalone-" + center_alg_name, d.get_abalone_data, abalone_classes, 1, 10)
+    run_rbfnn_classification("car-" + center_alg_name, d.get_car_data, car_classes, 1, 10)
+    run_rbfnn_classification("segmentation-" + center_alg_name, d.get_segmentation_data, segmentation_classes, 1, 30)
 
 
 def run_rbfnn_regression_data_sets(center_alg_name):
     run_rbfnn_regression("forestfires-" + center_alg_name, d.get_forest_fires_data, 1, 100)
     run_rbfnn_regression("machine-" + center_alg_name, d.get_machine_data, .1, 100)
-    run_rbfnn_regression("winequality-" + center_alg_name, d.get_wine_data, 1, 100)
+    # run_rbfnn_regression("winequality-" + center_alg_name, d.get_wine_data, 1, 20)
 
 
 def run_mfnn_classification_data_sets():
@@ -157,7 +157,7 @@ def run_mfnn_regression_data_sets():
     machine_data = d.get_machine_data("../data/machine.data")
     wine_data = d.get_wine_data("../data/winequality.data")
 
-    run_mfnn_regression(forest_fires_data, 0.1, 0.1, 100)
+    run_mfnn_regression(forest_fires_data, 1, 0.1, 100)
     run_mfnn_regression(machine_data, 1, 0.1, 100)
     run_mfnn_regression(wine_data, 1, 0.1, 100)
 
@@ -168,9 +168,9 @@ def main():
     convergence_size = 100
 
     # run_mfnn_regression_data_sets()
-    run_mfnn_classification_data_sets()
+    # run_mfnn_classification_data_sets()
 
-    # run_rbfnn_regression_data_sets("kmeans")
-    # run_mfnn_regression_data_sets()
+    # run_rbfnn_regression_data_sets("pam")
+    run_rbfnn_classification_data_sets("kmeans")
 
 main()

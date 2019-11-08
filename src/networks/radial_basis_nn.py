@@ -114,10 +114,8 @@ class RBFNN:
         while True:
             # Check for convergence by evaluating the past self.convergence_size*2 validation metrics (either accuracy
             # or error). We exit if the older half of metrics has a better average than the newer half.
-            print("getting metric...")
             metric = self.get_error(self.validation_data) if self.is_regression() else \
                 self.get_accuracy(self.validation_data)
-            print("metric: " + str(metric))
             convergence_check.append(metric)
             # Wait until the convergence check list has all self.convergence_size*2 items.
             if len(convergence_check) > self.convergence_size*2:
@@ -132,7 +130,7 @@ class RBFNN:
                 difference = new_metric - old_metric
                 if self.is_regression():
                     # Error needs to invert the difference, as we are MINIMIZING error.
-                    if -difference < CONVERGENCE_THRESHOLD:
+                    if -difference < CONVERGENCE_THRESHOLD or metric < .1:
                         return
                 else:
                     # We attempt to MAXIMIZE accuracy for classification data.
@@ -146,7 +144,6 @@ class RBFNN:
             mini_batches = [training_observations[k:k + mini_batch_size] for k in range(0, len(training_observations), mini_batch_size)]
             # We now perform gradient descent on each mini batch. We also maintain the delta weights from the previous
             # mini batch so that we can apply momentum to our current delta weight.
-            prev_delta_weights = None
             for mini_batch in mini_batches:
                 self.train_mini_batch(mini_batch)
 

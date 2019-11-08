@@ -92,6 +92,7 @@ def run_mfnn_classification(data_set, classes, learning_rate, momentum, converge
         for fold_i, fold in enumerate(folds):
             test = fold['test']
             train, validation = fold['train'].partition(.8)
+            print(layers)
             mfnn = MFNN(train, validation, layers, learning_rate, momentum, convergence_size, classes)
             mfnn.train()
             fold_average.append(mfnn.get_accuracy(test))
@@ -146,7 +147,7 @@ def run_mfnn_classification_data_sets():
     segmentation_data = d.get_segmentation_data("../data/segmentation.data")
     segmentation_classes = ["BRICKFACE", "SKY", "FOLIAGE", "CEMENT", "WINDOW", "PATH", "GRASS"]
 
-    run_mfnn_classification(abalone_data, abalone_classes, 1, .1, 100)
+    # run_mfnn_classification(abalone_data, abalone_classes, 1, .1, 100)
     run_mfnn_classification(car_data, car_classes, 1, .1, 100)
     run_mfnn_classification(segmentation_data, segmentation_classes, 1, .1, 100)
 

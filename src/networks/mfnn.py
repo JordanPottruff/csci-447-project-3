@@ -53,7 +53,6 @@ class MFNN:
 
     def train(self):
         numpy_training_data = self.training_data.get_numpy_list()
-
         mini_batch_size = 4
         convergence_check = []
 
@@ -77,6 +76,7 @@ class MFNN:
                 # We compare the difference in sums. We could use averages, but there is no difference when comparing
                 # the sums or averages since the denominator would be the same size for both.
                 difference = new_metric - old_metric
+                print(new_metric)
                 if self.is_regression():
                     # Error needs to invert the difference, as we are MINIMIZING error.
                     if -difference < CONVERGENCE_THRESHOLD:

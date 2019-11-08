@@ -51,10 +51,23 @@ class MFNN:
                     max_index = i
             return inverted_class_dict[max_index]
 
+    def print_weights(self):
+        for weight_i in range(len(self.weights)):
+            self.print_weight(weight_i)
+
+
+
+    def print_weight(self, i):
+        print(np.array2string(self.weights[i], precision=2, sign='+', separator=', ', suppress_small=True))
+        print()
+
     def train(self):
         numpy_training_data = self.training_data.get_numpy_list()
         mini_batch_size = 4
         convergence_check = []
+        print("Initial Randomized Weights ")
+        # print(self.weights)
+        self.print_weights()
 
         # Each cycle of this while loop is a single epoch. That is, it covers all of the training data (shuffled in
         # random order and put into mini batches). This loop will break based on the convergence calculation used
@@ -65,8 +78,11 @@ class MFNN:
             # Check for convergence by evaluating the past self.convergence_size*2 validation metrics (either accuracy
             # or error). We exit if the older half of metrics has a better average than the newer half.
             metric = self.get_error(self.validation_data) if self.is_regression() else \
-                self.get_accuracy(self.validation_data)
+                self.get_accuracy(self.validation_data) * 100
+
             convergence_check.append(metric)
+            if count == 1:
+                print("Initial Accuracy: " + "{:.2f}%".format(metric))
             # Wait until the convergence check list has all self.convergence_size*2 items.
             if len(convergence_check) > self.convergence_size*2:
                 # Remove the oldest metric, to maintain the list's size.
@@ -78,17 +94,26 @@ class MFNN:
                 # We compare the difference in sums. We could use averages, but there is no difference when comparing
                 # the sums or averages since the denominator would be the same size for both.
                 difference = new_metric - old_metric
-                if count % 200:
-                    print("Accuracy so far..." + "{:.2f}".format(new_metric))
+                if count % 10 == 0:
+                    print("Accuracy so far... " + "{:.2f}%".format(metric))
+                    print("Weights so far...")
+                    self.print_weights()
+
                 if self.is_regression():
                     # Error needs to invert the difference, as we are MINIMIZING error.
                     if -difference < CONVERGENCE_THRESHOLD:
+                        print("Final Validation Error: " + "{:.2f}%".format(metric))
+                        print("Final Weights")
+                        self.print_weights()
 
                         return
                 else:
                     # We attempt to MAXIMIZE accuracy for classification data.
                     if difference < CONVERGENCE_THRESHOLD:
-                        print("Final Validation Accuracy: " + "{:.2f}".format(new_metric))
+                        print("Final Validation Accuracy: " + "{:.2f}%".format(metric))
+                        print("Final Weights")
+                        self.print_weights()
+
                         return
 
             # If we are here, then there was no convergence. We therefore need to train on the training data (again). We

@@ -7,6 +7,7 @@ from src.networks.mfnn import MFNN
 import math
 import numpy as np
 
+
 def test_MFNN():
     # Test Car Data
     np.set_printoptions(precision=2, sign="+", floatmode="fixed", suppress=True, )
@@ -52,18 +53,9 @@ def test_MFNN():
             #   print("\t" + str(neuron))
 
 
-
-
-
-
-
-
-
-
-
-
 def main():
     test_MFNN()
+
 
 main()
 

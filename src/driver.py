@@ -168,7 +168,7 @@ def main():
     convergence_size = 100
 
     # run_mfnn_regression_data_sets()
-    run_mfnn_classification_data_sets()
+    # run_mfnn_classification_data_sets()
 
     # run_rbfnn_regression_data_sets("kmeans")
     # run_mfnn_regression_data_sets()

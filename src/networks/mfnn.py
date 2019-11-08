@@ -55,8 +55,6 @@ class MFNN:
         for weight_i in range(len(self.weights)):
             self.print_weight(weight_i)
 
-
-
     def print_weight(self, i):
         print(np.array2string(self.weights[i], precision=2, sign='+', separator=', ', suppress_small=True))
         print()

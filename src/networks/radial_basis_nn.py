@@ -26,6 +26,7 @@ class RBFNN:
         self.std_dev = self.get_stdrd_dev()
         self.class_dict = None if classes is None else {cls: index for index, cls in enumerate(classes)}
         self.dist_cache = {}
+        self.counter = 0
 
     # Returns the value of the class with the highest activation in the given class array. See 'get_class_array' for a
     # better understanding of the purpose of these functions.
@@ -58,19 +59,52 @@ class RBFNN:
         activation_value = math.exp((-1*(dist)**2)/(2*stdrd_dev**2))
         return activation_value
 
+    def print_weights(self):
+        for weight_i in range(len(self.weights)):
+            self.print_weight(weight_i)
+
+    def print_weight(self, i):
+        print(np.array2string(self.weights[i], precision=2, sign='+', separator=', ', suppress_small=True))
+        print()
+
+    def print_centers(self):
+        for center in self.receptors.data:
+            rounded_center = []
+            for col in self.receptors.attr_cols:
+                rounded_center.append(round(center[col]*10000)/10000)
+            print(rounded_center)
+
     def run_rbfnn(self, example: list):
+        self.counter += 1
         """Uses a linear combination of Gaussians to approximate any function."""
         stdrd_dev = self.std_dev
         num_of_centers = len(self.receptors.data)
         hidden_activations = []
+        min_dist = float("inf")
+        min_receptor = None
+        max_dist = float("-inf")
+        max_receptor = None
         for idx in range(num_of_centers):
             gaussian_rbf = self.get_rbf_activation(example, self.receptors.data[idx], stdrd_dev)
+            if min_receptor is None or min_dist > gaussian_rbf:
+                min_receptor = self.receptors.data[idx]
+                min_dist = gaussian_rbf
+            if max_receptor is None or max_dist < gaussian_rbf:
+                max_receptor = self.receptors.data[idx]
+                max_dist = gaussian_rbf
             hidden_activations.append(gaussian_rbf)
+
         hidden_activations = np.array(hidden_activations)
         output_activations = np.dot(self.weights, hidden_activations)
         if not self.is_regression():
             output_activations = af.sigmoid(output_activations)
         return output_activations, hidden_activations
+
+    def round_example(self, example):
+        rounded_example = []
+        for col in self.training_data.attr_cols:
+            rounded_example.append(round(example[col]*1000)/1000)
+        return rounded_example
 
     def gradient_descent(self, example: np.ndarray, expected: np.ndarray):
         output_activation, hidden_activations = self.run_rbfnn(example)
@@ -105,21 +139,27 @@ class RBFNN:
         for example in self.training_data.data:
             training_observations.append((example, example[self.training_data.class_col]))
 
-        mini_batch_size = 4
+        mini_batch_size = 8
         convergence_check = []
 
         # Each cycle of this while loop is a single epoch. That is, it covers all of the training data (shuffled in
         # random order and put into mini batches). This loop will break based on the convergence calculation used
         # immediately below.
+        count = 0
         while True:
+            count += 1
             # Check for convergence by evaluating the past self.convergence_size*2 validation metrics (either accuracy
             # or error). We exit if the older half of metrics has a better average than the newer half.
-            print("getting metric...")
             metric = self.get_error(self.validation_data) if self.is_regression() else \
                 self.get_accuracy(self.validation_data)
-            print("metric: " + str(metric))
             convergence_check.append(metric)
+            if count == 1:
+                print("Initial Error: " + "{:.2f}".format(metric))
             # Wait until the convergence check list has all self.convergence_size*2 items.
+            if count % 5 == 0:
+                print("Error so far... " + "{:.2f}".format(metric))
+                print("Weights so far...")
+                self.print_weights()
             if len(convergence_check) > self.convergence_size*2:
                 # Remove the oldest metric, to maintain the list's size.
                 convergence_check.pop(0)
@@ -130,13 +170,18 @@ class RBFNN:
                 # We compare the difference in sums. We could use averages, but there is no difference when comparing
                 # the sums or averages since the denominator would be the same size for both.
                 difference = new_metric - old_metric
+
                 if self.is_regression():
                     # Error needs to invert the difference, as we are MINIMIZING error.
                     if -difference < CONVERGENCE_THRESHOLD:
+                        print("Final Validation Error: " + "{:.2f}".format(metric))
+                        print("Final Weights")
                         return
                 else:
                     # We attempt to MAXIMIZE accuracy for classification data.
                     if difference < CONVERGENCE_THRESHOLD:
+                        print("Final Validation Accuracy: " + "{:.2f}%".format(metric))
+                        print("Final Weights")
                         return
 
             # If we are here, then there was no convergence. We therefore need to train on the training data (again). We

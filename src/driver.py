@@ -162,14 +162,10 @@ def run_mfnn_regression_data_sets():
 
 
 def main():
-    learning_rate = 0.00001
-    momentum = 0.2
-    convergence_size = 100
+    run_mfnn_regression_data_sets()
+    # run_mfnn_classification_data_sets()
 
-    # run_mfnn_regression_data_sets(learning_rate, momentum, convergence_size)
-    # run_mfnn_classification_data_sets(learning_rate, momentum, convergence_size)
-
-    run_rbfnn_regression_data_sets("kmeans")
+    # run_rbfnn_regression_data_sets("kmeans")
     # run_mfnn_regression_data_sets()
 
 main()

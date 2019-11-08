@@ -23,10 +23,10 @@ def cost_prime(expected, actual):
 def relu(z):
     return np.maximum(0, z)
 
-    def softmax(self, z):
-        numerator = np.exp(z)
-        denominator = np.sum(numerator)
-        return numerator/denominator
+def softmax(self, z):
+    numerator = np.exp(z)
+    denominator = np.sum(numerator)
+    return numerator/denominator
 
     # one alternative to reLU is the softplus which is an approximation of reLU
     # def softplus(self, z):

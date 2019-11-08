@@ -9,16 +9,16 @@ import math
 def test_MFNN():
     # Test Car Data
     car_classes = ["unacc", "acc", "good", "vgood"]
-    car_data = data.get_car_data("../data/car.data")
-    car_example = car_data.validation_folds(2)
+    car_data = data.get_car_data("../data/car.data", False)
+    train, validation = car_data.partition(.8)
 
-    test_example = car_example[0]['test'].get_data()[0]
-    test_example_attribute = car_example[0]['test'].get_data()[0][:-1]
+    test_example = train.get_data()[0]
+    test_example_attribute = test_example[:-1]
 
-    train, validation = car_example[0]['train'].partition(.8)
-    layer = [len(car_data.attr_cols), 4]
+    layer = [len(car_data.attr_cols), 5, 4]
     car_network = MFNN(train, validation, layer, 1, 0.1, 100, car_classes)
     car_network.train()
+    print()
     print("Network: " + str(layer))
     print("Test Example: " + str(test_example))
     print(car_network.class_dict)
@@ -29,10 +29,15 @@ def test_MFNN():
             print("Input Activation")
             for neuron in activation:
                 print("\t" + str(neuron))
+        elif index != 0 and index != (len(list_numpy) - 1):
+            print("Hidden Layer Activation")
+            for neuron in activation:
+                print("\t" + str(neuron))
         elif index == len(list_numpy) - 1:
             print("Output Activation")
             for neuron in activation:
                 print("\t" + str(neuron))
+
 
 
 

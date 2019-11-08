@@ -59,7 +59,9 @@ class MFNN:
         # Each cycle of this while loop is a single epoch. That is, it covers all of the training data (shuffled in
         # random order and put into mini batches). This loop will break based on the convergence calculation used
         # immediately below.
+        count = 0
         while True:
+            count += 1
             # Check for convergence by evaluating the past self.convergence_size*2 validation metrics (either accuracy
             # or error). We exit if the older half of metrics has a better average than the newer half.
             metric = self.get_error(self.validation_data) if self.is_regression() else \
@@ -76,14 +78,17 @@ class MFNN:
                 # We compare the difference in sums. We could use averages, but there is no difference when comparing
                 # the sums or averages since the denominator would be the same size for both.
                 difference = new_metric - old_metric
-                print(new_metric)
+                if count % 200:
+                    print("Accuracy so far..." + "{:.2f}".format(new_metric))
                 if self.is_regression():
                     # Error needs to invert the difference, as we are MINIMIZING error.
                     if -difference < CONVERGENCE_THRESHOLD:
+
                         return
                 else:
                     # We attempt to MAXIMIZE accuracy for classification data.
                     if difference < CONVERGENCE_THRESHOLD:
+                        print("Final Validation Accuracy: " + "{:.2f}".format(new_metric))
                         return
 
             # If we are here, then there was no convergence. We therefore need to train on the training data (again). We

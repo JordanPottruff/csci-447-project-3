@@ -44,7 +44,7 @@ def save_k_means(data, k, data_file_name):
         # points from the data.
 
         # Save each test, train, and center data to their respective files.
-        file_name = "../../rbf-data/"  + data_file_name + "-kmeans-fold-" + str(fold_i)
+        file_name = "../../rbf-data/"  + data_file_name + "-pam-fold-" + str(fold_i)
         test.save_file(file_name + "-test.txt")
         train.save_file(file_name + "-train.txt")
         centers.save_file(file_name + "-centers.txt")
@@ -140,5 +140,5 @@ def run_pam():
 
 
 # run_eknn()
-# run_kmeans()
-run_pam()
+run_kmeans()
+# run_pam()

@@ -2,12 +2,10 @@ import math
 import numpy as np
 from src.data import data_set as d
 from src import activation_functions as af
-# hidden nodes is first ex 4
-# input nodes is second for matrix ex 3
-# 4x3
+
 class RBFNN:
 
-    def __init__(self, centers, training_data, validation_data, num_inputs, classes, learning_rate):
+    def __init__(self, centers, training_data, validation_data, num_inputs, classes, learning_rate, mini_batching=32):
         self.receptors = centers  # Dataset, use for rbf (Centers of Gaussians)
         self.training_data = training_data  # Dataset, use to train
         self.validation_data = validation_data # Dataset, use to validate training convergence
@@ -16,42 +14,24 @@ class RBFNN:
         self.num_outputs = len(self.classes) if self.classes is not None else 1
         self.learning_rate = learning_rate
         self.weights = np.random.randn(self.num_outputs, len(self.receptors.data))
-        self.b = np.random.rand(1)
-        self.epochs = 10
+        self.mini_batching = mini_batching
+        self.epochs = 1
         self.batch_size = math.ceil(len(training_data.data)/10)
         self.std_dev = self.get_stdrd_dev()
         self.class_dict = None if classes is None else {cls: index for index, cls in enumerate(classes)}
 
-    def is_regression(self):
-        return self.class_dict is None
-
-    # The output of the neural network is a numpy array, rather than a single value. In fact, the output is just the
-    # activations of the final layer, where either each node corresponds to the probability of a class (classification),
-    # or there is only one output node which signifies a regression estimate (regression). This function is therefore
-    # required for determining the "expected" output array for a given expected class.
-    def get_class_array(self, class_value):
-        if self.is_regression():
-            return np.array([class_value])
-        else:
-            class_index = self.class_dict[class_value]
-            num_classes = len(self.class_dict)
-            # Return an array with all zeros except for the position representing the class_value.
-            class_array = np.zeros(num_classes)
-            class_array[class_index] = 1
-            return class_array
-
     # Returns the value of the class with the highest activation in the given class array. See 'get_class_array' for a
     # better understanding of the purpose of these functions.
-    def get_class_value(self, class_array):
-        if self.is_regression():
-            return class_array[0]
-        else:
-            inverted_class_dict = {value: key for key, value in self.class_dict.items()}
-            max_index = 0
-            for i in range(1, len(class_array)):
-                if class_array[i] > class_array[max_index]:
-                    max_index = i
-            return inverted_class_dict[max_index]
+    # def get_class_value(self, class_array):
+    #     if self.is_regression():
+    #         return class_array[0]
+    #     else:
+    #         inverted_class_dict = {value: key for key, value in self.class_dict.items()}
+    #         max_index = 0
+    #         for i in range(1, len(class_array)):
+    #             if class_array[i] > class_array[max_index]:
+    #                 max_index = i
+    #         return inverted_class_dict[max_index]
 
     def get_stdrd_dev(self):
         """Get the standard deviation between the clusters of the center nodes"""
@@ -60,18 +40,6 @@ class RBFNN:
         num_cluster_centers = len(self.receptors.data)
         stdrd_dev = max_dist_bw_clusters/math.sqrt((2*num_cluster_centers))
         return stdrd_dev
-
-    def train(self):
-        # The following method call creates a new list that stores tuples. The first position of each tuple is the
-        # example/observation, in the form of a numpy array. The second position is the name of the class.
-        numpy_training_data = self.training_data.get_numpy_list()
-        for epoch in range(self.epochs):
-            for example, expected_class in numpy_training_data:
-                expected_output = self.get_class_array(expected_class)
-                delta_weights = self.gradient_descent(example, expected_class)
-                # TODO: subtract delta weights from the current weights, and potentially use an average delta weight
-                # computed across all items in a mini-batch.
-                print(delta_weights)
 
     def get_rbf_activation(self, input, center, stdrd_dev):
         """Use a Gaussian RBF as our "activation" function and take in an input parameter and centers for the neural
@@ -96,7 +64,6 @@ class RBFNN:
 
     def gradient_descent(self, example: np.ndarray, expected: np.ndarray):
         output_activation, hidden_activations = self.run_rbfnn(example)
-
         delta = af.cost_prime(expected, output_activation)
         # No sigmoid activation function is we are doing regression, so we don't need to use the derivative of the
         # sigmoid during gradient descent in that case.
@@ -104,6 +71,43 @@ class RBFNN:
             delta = delta * af.sigmoid_prime(output_activation)
         delta_weights = np.outer(delta, hidden_activations)
         return delta_weights
+
+    def is_regression(self):
+        return self.class_dict is None
+
+    # The output of the neural network is a numpy array, rather than a single value. In fact, the output is just the
+    # activations of the final layer, where either each node corresponds to the probability of a class (classification),
+    # or there is only one output node which signifies a regression estimate (regression). This function is therefore
+    # required for determining the "expected" output array for a given expected class.
+    def get_class_array(self, class_value):
+        if self.is_regression():
+            return np.array([class_value])
+        else:
+            class_index = self.class_dict[class_value]
+            num_classes = len(self.class_dict)
+            # Return an array with all zeros except for the position representing the class_value.
+            class_array = np.zeros(num_classes)
+            class_array[class_index] = 1
+            return class_array
+
+    def train(self):
+        # The following method call creates a new list that stores tuples. The first position of each tuple is the
+        # example/observation, in the form of a numpy array. The second position is the name of the class.
+        numpy_training_data = self.training_data.get_numpy_list()
+        for epoch in range(self.epochs):
+            # Now we form the mini batches. Each mini batch is split of our training data. These will be used to
+            # calculate model error and update model coefficients. So first split training set into batches
+            mini_batches = [numpy_training_data[k:k + self.mini_batching] for k in
+                            range(0, len(numpy_training_data), self.mini_batching)]
+            mini_batch_delta_weights = []
+            for example, expected_class in mini_batches:
+                    # We now perform gradient descent on each mini batch and get the delta-weights
+                    expected_output = self.get_class_array(expected_class)
+                    delta_weights = self.gradient_descent(example, expected_class)
+                    # TODO: potentially use an average delta weight
+                    self.weights -= delta_weights
+                    mini_batch_delta_weights.append(delta_weights)
+                    print(self.weights)
 
 
 def test():

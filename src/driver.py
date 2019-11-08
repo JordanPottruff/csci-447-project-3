@@ -156,7 +156,7 @@ def run_mfnn_regression_data_sets():
     machine_data = d.get_machine_data("../data/machine.data")
     wine_data = d.get_wine_data("../data/winequality.data")
 
-    run_mfnn_regression(forest_fires_data, 1, 0.1, 100)
+    run_mfnn_regression(forest_fires_data, 0.1, 0.1, 100)
     run_mfnn_regression(machine_data, 1, 0.1, 100)
     run_mfnn_regression(wine_data, 1, 0.1, 100)
 
@@ -166,10 +166,10 @@ def main():
     momentum = 0.2
     convergence_size = 100
 
-    # run_mfnn_regression_data_sets(learning_rate, momentum, convergence_size)
-    # run_mfnn_classification_data_sets(learning_rate, momentum, convergence_size)
+    # run_mfnn_regression_data_sets()
+    run_mfnn_classification_data_sets()
 
-    run_rbfnn_regression_data_sets("kmeans")
+    # run_rbfnn_regression_data_sets("kmeans")
     # run_mfnn_regression_data_sets()
 
 main()

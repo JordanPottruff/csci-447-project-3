@@ -55,8 +55,6 @@ class MFNN:
         numpy_training_data = self.training_data.get_numpy_list()
 
         mini_batch_size = 4
-        convergence_error = []
-        convergence_accuracy = []
         convergence_check = []
 
         # Each cycle of this while loop is a single epoch. That is, it covers all of the training data (shuffled in

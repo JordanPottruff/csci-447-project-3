@@ -2,10 +2,16 @@ import math
 import numpy as np
 from src.data import data_set as d
 from src import activation_functions as af
+import random
+
+# The amount each new average metric needs to be better than the old average metric for the training process to
+# continue.
+CONVERGENCE_THRESHOLD = .0001
+
 
 class RBFNN:
 
-    def __init__(self, centers, training_data, validation_data, num_inputs, classes, learning_rate, mini_batching=32):
+    def __init__(self, centers, training_data, validation_data, num_inputs, learning_rate, convergence_size, classes=None):
         self.receptors = centers  # Dataset, use for rbf (Centers of Gaussians)
         self.training_data = training_data  # Dataset, use to train
         self.validation_data = validation_data # Dataset, use to validate training convergence
@@ -13,30 +19,30 @@ class RBFNN:
         self.classes = classes  # list of class outputs
         self.num_outputs = len(self.classes) if self.classes is not None else 1
         self.learning_rate = learning_rate
+        self.convergence_size = convergence_size
         self.weights = np.random.randn(self.num_outputs, len(self.receptors.data))
-        self.mini_batching = mini_batching
         self.epochs = 1
         self.batch_size = math.ceil(len(training_data.data)/10)
         self.std_dev = self.get_stdrd_dev()
         self.class_dict = None if classes is None else {cls: index for index, cls in enumerate(classes)}
+        self.dist_cache = {}
 
     # Returns the value of the class with the highest activation in the given class array. See 'get_class_array' for a
     # better understanding of the purpose of these functions.
-    # def get_class_value(self, class_array):
-    #     if self.is_regression():
-    #         return class_array[0]
-    #     else:
-    #         inverted_class_dict = {value: key for key, value in self.class_dict.items()}
-    #         max_index = 0
-    #         for i in range(1, len(class_array)):
-    #             if class_array[i] > class_array[max_index]:
-    #                 max_index = i
-    #         return inverted_class_dict[max_index]
+    def get_class_value(self, class_array):
+        if self.is_regression():
+            return class_array[0]
+        else:
+            inverted_class_dict = {value: key for key, value in self.class_dict.items()}
+            max_index = 0
+            for i in range(1, len(class_array)):
+                if class_array[i] > class_array[max_index]:
+                    max_index = i
+            return inverted_class_dict[max_index]
 
     def get_stdrd_dev(self):
         """Get the standard deviation between the clusters of the center nodes"""
         max_dist_bw_clusters = self.receptors.get_max_distance()
-        print(max_dist_bw_clusters)
         num_cluster_centers = len(self.receptors.data)
         stdrd_dev = max_dist_bw_clusters/math.sqrt((2*num_cluster_centers))
         return stdrd_dev
@@ -44,14 +50,18 @@ class RBFNN:
     def get_rbf_activation(self, input, center, stdrd_dev):
         """Use a Gaussian RBF as our "activation" function and take in an input parameter and centers for the neural
          network and the standard deviation for these centers. Then calculate and output the 'activation value'."""
-        activation_value = math.exp(-1*(self.receptors.distance(input, center))**2/(2*stdrd_dev**2))
+        if center not in self.dist_cache:
+            self.dist_cache[center] = {}
+        if input not in self.dist_cache[center]:
+            self.dist_cache[center][input] = self.receptors.distance(input, center)
+        dist = self.dist_cache[center][input]
+        activation_value = math.exp((-1*(dist)**2)/(2*stdrd_dev**2))
         return activation_value
 
-    def run_rbfnn(self, example: np.ndarray):
+    def run_rbfnn(self, example: list):
         """Uses a linear combination of Gaussians to approximate any function."""
         stdrd_dev = self.std_dev
         num_of_centers = len(self.receptors.data)
-        bias = 1
         hidden_activations = []
         for idx in range(num_of_centers):
             gaussian_rbf = self.get_rbf_activation(example, self.receptors.data[idx], stdrd_dev)
@@ -91,28 +101,92 @@ class RBFNN:
             return class_array
 
     def train(self):
-        # The following method call creates a new list that stores tuples. The first position of each tuple is the
-        # example/observation, in the form of a numpy array. The second position is the name of the class.
-        numpy_training_data = self.training_data.get_numpy_list()
-        for epoch in range(self.epochs):
-            # Now we form the mini batches. Each mini batch is split of our training data. These will be used to
-            # calculate model error and update model coefficients. So first split training set into batches
-            mini_batches = [numpy_training_data[k:k + self.mini_batching] for k in
-                            range(0, len(numpy_training_data), self.mini_batching)]
-            mini_batch_delta_weights = []
-            for example, expected_class in mini_batches:
-                    # We now perform gradient descent on each mini batch and get the delta-weights
-                    expected_output = self.get_class_array(expected_class)
-                    delta_weights = self.gradient_descent(example, expected_class)
-                    # TODO: potentially use an average delta weight
-                    self.weights -= delta_weights
-                    mini_batch_delta_weights.append(delta_weights)
-                    print(self.weights)
+        training_observations = []
+        for example in self.training_data.data:
+            training_observations.append((example, example[self.training_data.class_col]))
+
+        mini_batch_size = 4
+        convergence_check = []
+
+        # Each cycle of this while loop is a single epoch. That is, it covers all of the training data (shuffled in
+        # random order and put into mini batches). This loop will break based on the convergence calculation used
+        # immediately below.
+        while True:
+            # Check for convergence by evaluating the past self.convergence_size*2 validation metrics (either accuracy
+            # or error). We exit if the older half of metrics has a better average than the newer half.
+            print("getting metric...")
+            metric = self.get_error(self.validation_data) if self.is_regression() else \
+                self.get_accuracy(self.validation_data)
+            print("metric: " + str(metric))
+            convergence_check.append(metric)
+            # Wait until the convergence check list has all self.convergence_size*2 items.
+            if len(convergence_check) > self.convergence_size*2:
+                # Remove the oldest metric, to maintain the list's size.
+                convergence_check.pop(0)
+                # The last half of the list are the older metrics.
+                old_metric = sum(convergence_check[:self.convergence_size])
+                # The first half of the list are the newer metrics.
+                new_metric = sum(convergence_check[self.convergence_size:])
+                # We compare the difference in sums. We could use averages, but there is no difference when comparing
+                # the sums or averages since the denominator would be the same size for both.
+                difference = new_metric - old_metric
+                if self.is_regression():
+                    # Error needs to invert the difference, as we are MINIMIZING error.
+                    if -difference < CONVERGENCE_THRESHOLD:
+                        return
+                else:
+                    # We attempt to MAXIMIZE accuracy for classification data.
+                    if difference < CONVERGENCE_THRESHOLD:
+                        return
+
+            # If we are here, then there was no convergence. We therefore need to train on the training data (again). We
+            # first shuffle the training data so that we aren't learning on the exact same mini batches as last time.
+            random.shuffle(training_observations)
+            # Now we form the mini batches. Each mini batch is a list of examples.
+            mini_batches = [training_observations[k:k + mini_batch_size] for k in range(0, len(training_observations), mini_batch_size)]
+            # We now perform gradient descent on each mini batch. We also maintain the delta weights from the previous
+            # mini batch so that we can apply momentum to our current delta weight.
+            prev_delta_weights = None
+            for mini_batch in mini_batches:
+                self.train_mini_batch(mini_batch)
+
+    def train_mini_batch(self, mini_batch):
+        for example_array, expected_class in mini_batch:
+            expected_array = self.get_class_array(expected_class)
+            delta_weights = self.gradient_descent(example_array, expected_array) * (self.learning_rate / len(mini_batch))
+            self.weights -= delta_weights
+
+    def get_error(self, data_set):
+        observations = [(example, example[self.training_data.class_col]) for example in data_set.data]
+        squared_sum = 0
+        for example, expected_class in observations:
+            output = self.run(example)
+            squared_sum += (self.get_class_value(output) - expected_class)**2
+        return math.sqrt(squared_sum) / len(observations)
+
+    def get_accuracy(self, data_set):
+        observations = [(example, example[self.training_data.class_col]) for example in data_set.data]
+        correct = 0
+        for example, expected_class in observations:
+            output = self.run(example)
+            if self.get_class_value(output) == expected_class:
+                correct += 1
+        return correct / len(observations)
+
+    def get_numpy_array(self, example):
+        attr_only = []
+        for col in self.training_data.attr_cols:
+            attr_only.append(example[col])
+        return np.array(attr_only), example[self.training_data.class_col]
+
+    def run(self, example):
+        out, hidden = self.run_rbfnn(example)
+        return out
 
 
-def test():
+def test_regression():
     # This is just to setup some testing data.
-    data = d.get_regression_test_data("../data/test/regression_test_set.data")
+    data = d.get_regression_test_data("../../data/test/regression_test_set.data")
     test = data.copy()
     training = data.copy()
     training.data *= 10
@@ -125,10 +199,31 @@ def test():
     centers.data = centers_data
 
     # Create the network
-    rbfnn = RBFNN(centers, training, validation, 2, None, 1)
-    rbfnn.run_rbfnn(np.array([0, 1]))
+    rbfnn = RBFNN(centers, training, validation, 2, 1, 100)
     # Train the rbfnn on its training data.
     rbfnn.train()
     # Next, we would run a bunch of test examples.
 
-# test()
+
+def test_classification():
+    # This is just to setup some testing data.
+    data = d.get_classification_test_data("../../data/test/classification_test_set.data")
+    test = data.copy()
+    training = data.copy()
+    training.data *= 10
+    validation = data.copy()
+    validation.data *= 3
+
+    # I'm manually writing out the centers here.
+    centers_data = [[0, 1, 1], [1, 0, 1], [0, 0, 0], [1, 1, 0]]
+    centers = data.copy()
+    centers.data = centers_data
+
+    # Create the network
+    rbfnn = RBFNN(centers, training, validation, 2, 1, 100, [0, 1])
+    # Train the rbfnn on its training data.
+    rbfnn.train()
+    # Next, we would run a bunch of test examples.
+
+
+# test_classification()

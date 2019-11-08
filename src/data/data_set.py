@@ -59,7 +59,8 @@ class DataSet:
             for i in range(len(line)):
                 if i not in cols:
                     continue
-                new_line[i] = float(line[i])
+                if line[i] != 'None':
+                    new_line[i] = float(line[i])
             line = tuple(new_line)
             self.data[line_i] = line
 
@@ -193,7 +194,7 @@ def get_abalone_data(file_name, normalize=True):
     # Convert male, female, infant column to numeric values
     abalone_data.convert_str_attribute(0, {'I': 0, 'F': 1, 'M': 2})
     # Convert attribute columns to floats
-    abalone_data.convert_to_float(list(range(0, 8)))
+    abalone_data.convert_to_float(list(range(0, 9)))
     # Normalize values
     if normalize:
         abalone_data.normalize_z_score(list(range(0, 8)))
@@ -217,6 +218,7 @@ def get_car_data(file_name, normalize=True):
     car_data.convert_str_attribute(3, {'2': 2, '4': 4, 'more': 5})
     car_data.convert_str_attribute(4, {'small': 0, 'med': 1, 'big': 2})
     car_data.convert_str_attribute(5, {'low': 0, 'med': 1, 'high': 2})
+    car_data.convert_to_float([0, 1, 2, 3, 4, 5])
     # Normalize values.
     if normalize:
         car_data.normalize_z_score(list(range(0, 6)))

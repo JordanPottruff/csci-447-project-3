@@ -1,32 +1,14 @@
 # driver.py
 # File for running our experimental design.
+
 import src.data.data_set as d
-from src.networks.radial_basis_nn import RBFNN
+from src.networks.rbfnn import RBFNN
 from src.networks.mfnn import MFNN
 import math
 
 
-def test_classification():
-    test_data = d.get_classification_test_data()
-    training_set = test_data.copy()
-    training_set.data *= 12
-    validation_set = training_set.copy()
-    validation_set.data *= 10
-    multilayer = MFNN(training_set, validation_set, [2, 2, 2], 1, 0.01, 100, [0, 1])
-    multilayer.train()
-
-
-def test_regression():
-    test_data = d.get_regression_test_data()
-    training_set = test_data.copy()
-    training_set.data *= 12
-    validation_set = training_set.copy()
-    validation_set.data *= 10
-
-    multilayer = MFNN(training_set, validation_set, [2, 10, 1], 1, 0.01, 100, None)
-    multilayer.train()
-
-
+# Gets the folds for running rbf using a certain algorithm, as these folds are stored in a file so we do not have to
+# rerun our center algs.
 def get_rbf_data(data_set_name, data_opener):
     data_set_name = "../rbf-data/" + data_set_name
     folds = []
@@ -38,6 +20,7 @@ def get_rbf_data(data_set_name, data_opener):
     return folds
 
 
+# Runs the RBFNN using cross validation on specific classification data set with the given parameters.
 def run_rbfnn_classification(data_set_name, data_opener, classes, learning_rate, convergence_size):
     print(data_set_name)
     # Standard parameters to run on the data_set
@@ -57,6 +40,7 @@ def run_rbfnn_classification(data_set_name, data_opener, classes, learning_rate,
     print("Average Accuracy: " + str(sum(fold_average) / num_folds))
 
 
+# Runs the RBFNN using cross validation on specific regression data set with the given parameters.
 def run_rbfnn_regression(data_set_name, data_opener, learning_rate, convergence_size):
     print(data_set_name)
     # Standard parameters to run on the data_set
@@ -76,6 +60,7 @@ def run_rbfnn_regression(data_set_name, data_opener, learning_rate, convergence_
     print("Average Error: " + str(sum(fold_average) / num_folds))
 
 
+# Runs the MFNN using cross validation on specific classification data set with the given parameters.
 def run_mfnn_classification(data_set, classes, learning_rate, momentum, convergence_size):
     print(data_set.filename)
     # Standard parameters to run on the data_set
@@ -100,6 +85,7 @@ def run_mfnn_classification(data_set, classes, learning_rate, momentum, converge
         print("Average Accuracy: " + str(sum(fold_average) / num_folds))
 
 
+# Runs the MFNN using cross validation on specific regression data set with the given parameters.
 def run_mfnn_regression(data_set, learning_rate, momentum, convergence_size):
     print(data_set.filename)
     num_folds = 10
@@ -123,6 +109,7 @@ def run_mfnn_regression(data_set, learning_rate, momentum, convergence_size):
         print("Average Error: " + str(sum(fold_average)/num_folds))
 
 
+# Runs the RBFNN on each classification data set, using the specified algorithm for getting center vectors.
 def run_rbfnn_classification_data_sets(center_alg_name):
     abalone_classes = [float(i) for i in range(1, 30)]
     car_classes = ["unacc", "acc", "good", "vgood"]
@@ -133,12 +120,14 @@ def run_rbfnn_classification_data_sets(center_alg_name):
     run_rbfnn_classification("segmentation-" + center_alg_name, d.get_segmentation_data, segmentation_classes, 1, 30)
 
 
+# Runs the RBFNN on each regression data set, using the specified algorithm for getting center vectors.
 def run_rbfnn_regression_data_sets(center_alg_name):
     run_rbfnn_regression("forestfires-" + center_alg_name, d.get_forest_fires_data, 1, 100)
     run_rbfnn_regression("machine-" + center_alg_name, d.get_machine_data, .1, 100)
-    # run_rbfnn_regression("winequality-" + center_alg_name, d.get_wine_data, 1, 20)
+    run_rbfnn_regression("winequality-" + center_alg_name, d.get_wine_data, 1, 20)
 
 
+# Runs the MFNN on each classification data set.
 def run_mfnn_classification_data_sets():
     abalone_data = d.get_abalone_data("../data/abalone.data")
     abalone_classes = [float(i) for i in range(1, 30)]
@@ -147,11 +136,12 @@ def run_mfnn_classification_data_sets():
     segmentation_data = d.get_segmentation_data("../data/segmentation.data")
     segmentation_classes = ["BRICKFACE", "SKY", "FOLIAGE", "CEMENT", "WINDOW", "PATH", "GRASS"]
 
-    # run_mfnn_classification(abalone_data, abalone_classes, 1, .1, 100)
+    run_mfnn_classification(abalone_data, abalone_classes, 1, .1, 100)
     run_mfnn_classification(car_data, car_classes, 1, .1, 100)
     run_mfnn_classification(segmentation_data, segmentation_classes, 1, .1, 100)
 
 
+# Runs the MFNN on each regression data set.
 def run_mfnn_regression_data_sets():
     forest_fires_data = d.get_forest_fires_data("../data/forestfires.data")
     machine_data = d.get_machine_data("../data/machine.data")
@@ -162,18 +152,18 @@ def run_mfnn_regression_data_sets():
     run_mfnn_regression(wine_data, 1, 0.1, 100)
 
 
+# Runs each set of regression and classification for the different data sets and configurations.
 def main():
     run_mfnn_regression_data_sets()
-    # run_mfnn_classification_data_sets()
+    run_mfnn_classification_data_sets()
 
-<<<<<<< HEAD
-    # run_rbfnn_regression_data_sets("kmeans")
-=======
->>>>>>> bdcd8a6bf37e18a0e80e0ee0ecf5148c95132987
-    # run_mfnn_regression_data_sets()
-    # run_mfnn_classification_data_sets()
+    run_rbfnn_regression_data_sets("eknn")
+    run_rbfnn_classification_data_sets("eknn")
 
-    # run_rbfnn_regression_data_sets("pam")
+    run_rbfnn_regression_data_sets("kmeans")
     run_rbfnn_classification_data_sets("kmeans")
+
+    run_rbfnn_regression_data_sets("pam")
+    run_rbfnn_classification_data_sets("pam")
 
 main()

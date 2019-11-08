@@ -1,5 +1,7 @@
-# This class is used for generating files of training, test, and center data sets for each fold of our RBF network. All
-# resulting files are stored under the "rbf-data" directory.
+# center.py
+# This file is used for generating the clusters used for the RBFNN network. It uses the Edited-KNN, K-Means, and PAM
+# algorithms for finding "centers" for our network. These are then stored in files so that we can access them later
+# without having to re-run the algorithm. To see the files, they are stored under /rbf-data/.
 
 from src.centers.edited_knn import EditedKNN
 from src.centers.k_means import KMeans
@@ -8,6 +10,7 @@ import src.data.data_set as d
 import math
 
 
+# Saves the cross-folds for Edited-KNN on the specified data set. Each fold has a train, test, and center examples.
 def save_edited_knn_clusters(data, k, data_file_name):
     folds = data.validation_folds(10)
     for fold_i, fold in enumerate(folds):
@@ -30,6 +33,7 @@ def save_edited_knn_clusters(data, k, data_file_name):
         centers.save_file(file_name + "-centers.txt")
 
 
+# Saves the cross-folds for K-Means on the specified data set. Each fold has a train, test, and center examples.
 def save_k_means(data, k, data_file_name):
     folds = data.validation_folds(10)
     for fold_i, fold in enumerate(folds):
@@ -50,6 +54,7 @@ def save_k_means(data, k, data_file_name):
         centers.save_file(file_name + "-centers.txt")
 
 
+# Saves the cross-folds for PAM on the specified data set. Each fold has a train, test, and center examples.
 def save_pam(data, k, data_file_name):
     folds = data.validation_folds(10)
     for fold_i, fold in enumerate(folds):
@@ -73,20 +78,22 @@ def save_pam(data, k, data_file_name):
         centers.save_file(file_name + "-centers.txt")
 
 
+# Runs the Edited-KNN algorithm on each data set.
 def run_eknn():
     abalone_data = d.get_abalone_data("../../data/abalone.data")
     abalone_k = math.ceil(math.sqrt(len(abalone_data.data)))
     save_edited_knn_clusters(abalone_data, abalone_k, "abalone")
 
-    # car_data = d.get_car_data("../../data/car.data")
-    # car_k = math.ceil(math.sqrt(len(car_data.data)))
-    # save_edited_knn_clusters(car_data, car_k, "car")
-    #
-    # segmentation_data = d.get_segmentation_data("../../data/segmentation.data")
-    # segmentation_k = math.ceil(math.sqrt(len(segmentation_data.data)))
-    # save_edited_knn_clusters(segmentation_data, segmentation_k, "segmentation2")
+    car_data = d.get_car_data("../../data/car.data")
+    car_k = math.ceil(math.sqrt(len(car_data.data)))
+    save_edited_knn_clusters(car_data, car_k, "car")
+
+    segmentation_data = d.get_segmentation_data("../../data/segmentation.data")
+    segmentation_k = math.ceil(math.sqrt(len(segmentation_data.data)))
+    save_edited_knn_clusters(segmentation_data, segmentation_k, "segmentation2")
 
 
+# Runs the K-Means algorithm on each data set.
 def run_kmeans():
     abalone_data = d.get_abalone_data("../../data/abalone.data")
     abalone_k = 2510
@@ -113,6 +120,7 @@ def run_kmeans():
     save_k_means(wine_data, wine_k, "winequality")
 
 
+# Runs the PAM algorithm on each data set.
 def run_pam():
     abalone_data = d.get_abalone_data("../../data/abalone.data")
     abalone_k = 2510
@@ -139,6 +147,7 @@ def run_pam():
     save_pam(wine_data, wine_k, "winequality")
 
 
-# run_eknn()
+# Runs all the algorithms and saves the results to /rbf-data/.
+run_eknn()
 run_kmeans()
-# run_pam()
+run_pam()

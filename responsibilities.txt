@@ -1,0 +1,6 @@
+Everyone contributed equally to the project.
+
+Alan Tong - MFNN, Video, Paper
+Jordan Pottruff - MFNN, Video, Paper
+Jacob Weikert - RBFNN, Paper
+Elizabeth Hamaoka - Activations, MFNN, Paper

@@ -1,3 +1,6 @@
+# data_set.py
+# Has the class that defines data set objects, which we use throughout our algorithms.
+
 from typing import Dict
 import math
 import random
@@ -14,6 +17,7 @@ CLASSIFICATION_TEST_DATA_FILE = '../data/test/classification_test_set.data'
 REGRESSION_TEST_DATA_FILE = '../data/test/regression_test_set.data'
 
 
+# Creates DataSet objects, which stored the relevant information for our data sets.
 class DataSet:
 
     # Creates a DataSet object from:
@@ -28,12 +32,15 @@ class DataSet:
         self.class_col = class_col
         self.filename = filename
 
+    # Creates a copy of this data set, with copies of each underlying field as well.
     def copy(self):
         return DataSet(self.data.copy(), self.attr_cols.copy(), self.class_col, self.filename)
 
+    # Returns the underlying data list.
     def get_data(self):
         return self.data.copy()
 
+    # Returns the length of the underlying data list.
     def get_len(self):
         return len(self.data)
 
@@ -145,12 +152,14 @@ class DataSet:
             print(row)
         print()
 
+    # Calculates the distance between two examples according to the information for this data set.
     def distance(self, example_a: list, example_b: list):
         squared_sum = 0
         for attr_col in self.attr_cols:
             squared_sum += (example_a[attr_col] - example_b[attr_col]) ** 2
         return math.sqrt(squared_sum)
 
+    # Returns the maximum distance between any two observations in this data set.
     def get_max_distance(self):
         max_distance = 0
         idx = 0
@@ -177,17 +186,16 @@ class DataSet:
         return numpy_list
 
 
-
-
 # NOTE:
 # The following functions are meant to handle the preprocessing of the data sets used in our experimental design.
 
 
+# Gets the abalone data set.
 def get_abalone_data():
     return get_abalone_data(ABALONE_DATA_FILE)
 
 
-# Gets the abalone data set.
+# Gets the abalone data set from a specific file name.
 def get_abalone_data(file_name, normalize=True):
     data = util.read_file(file_name)
     abalone_data = DataSet(data, list(range(1, 8)), 8, file_name)
@@ -203,11 +211,12 @@ def get_abalone_data(file_name, normalize=True):
     return abalone_data
 
 
+# Gets the car data set.
 def get_car_data():
     return get_car_data(CAR_DATA_FILE)
 
 
-# Gets the car data set.
+# Gets the car data set from a specified file name.
 def get_car_data(file_name, normalize=True):
     data = util.read_file(file_name)
     car_data = DataSet(data, list(range(0, 6)), 6, file_name)
@@ -227,11 +236,12 @@ def get_car_data(file_name, normalize=True):
     return car_data
 
 
+# Gets the forest fire data set.
 def get_forest_fires_data():
     return get_forest_fires_data(FOREST_FIRE_DATA_FILE)
 
 
-# Gets the forest fires data set.
+# Gets the forest fires data set from the specified file name.
 def get_forest_fires_data(file_name, normalize=True):
     data = util.read_file(file_name)
     forest_fires_data = DataSet(data, list(range(0, 12)), 12, file_name)
@@ -251,11 +261,12 @@ def get_forest_fires_data(file_name, normalize=True):
     return forest_fires_data
 
 
+# Gets the machine data set.
 def get_machine_data():
     return get_machine_data(MACHINE_DATA_FILE)
 
 
-# Gets the machine data set.
+# Gets the machine data set from the specified file name.
 def get_machine_data(file_name, normalize=True):
     data = util.read_file(file_name)
     # There is another final column but we probably want to exclude it.
@@ -270,11 +281,12 @@ def get_machine_data(file_name, normalize=True):
     return machine_data
 
 
+# Gets the segmentation data set.
 def get_segmentation_data():
     return get_segmentation_data(SEGMENTATION_DATA_FILE)
 
 
-# Gets the segmentation data set.
+# Gets the segmentation data set from the specified file name.
 def get_segmentation_data(file_name, normalize=True):
     data = util.read_file(file_name)
     # Attribute columns are all numeric
@@ -294,11 +306,12 @@ def get_segmentation_data(file_name, normalize=True):
     return segmentation_data
 
 
+# Gets the wine data set.
 def get_wine_data():
     return get_wine_data(WINE_DATA_FILE)
 
 
-# Gets the wine data set.
+# Gets the wine data set from the specified file name.
 def get_wine_data(file_name, normalize=True):
     data = util.read_file(file_name)
     wine_data = DataSet(data, list(range(0, 11)), 11, file_name)
@@ -312,26 +325,3 @@ def get_wine_data(file_name, normalize=True):
     return wine_data
 
 
-def get_classification_test_data():
-    return get_classification_test_data(CLASSIFICATION_TEST_DATA_FILE)
-
-
-# Gets test_set data
-def get_classification_test_data(file_name):
-    data = util.read_file(file_name)
-    test_data = DataSet(data, [0, 1], 2, file_name)
-    test_data.convert_to_float([0, 1, 2])
-    return test_data
-
-
-def get_regression_test_data():
-    return get_regression_test_data(REGRESSION_TEST_DATA_FILE)
-
-
-def get_regression_test_data(file_name):
-    data = util.read_file(file_name)
-    test_data = DataSet(data, [0, 1], 2, file_name)
-    test_data.remove_header(1)
-    test_data.convert_to_float([0, 1, 2])
-    # test_data.normalize_z_score([0, 1])
-    return test_data

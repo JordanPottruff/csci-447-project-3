@@ -1,5 +1,7 @@
 # util.py
-# These are general utility functions that are useful across all of our algorithms/code.
+# These are general utility functions that are useful across all of our algorithms/code. Most of this is used by the
+# algorithms from last assignment that find the centers for the RBFNN.
+
 import csv
 import operator as op
 

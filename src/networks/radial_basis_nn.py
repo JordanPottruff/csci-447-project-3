@@ -108,7 +108,7 @@ class RBFNN:
 
 def test():
     # This is just to setup some testing data.
-    data = d.get_regression_test_data("../../data/test/regression_test_set.data")
+    data = d.get_regression_test_data("../data/test/regression_test_set.data")
     test = data.copy()
     training = data.copy()
     training.data *= 10
@@ -127,4 +127,4 @@ def test():
     rbfnn.train()
     # Next, we would run a bunch of test examples.
 
-test()
+# test()

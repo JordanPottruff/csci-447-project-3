@@ -28,6 +28,7 @@ def run_rbf_network(data_set_name, data_opener):
 
 
 def run_mfnn_classification(data_set, classes, learning_rate, momentum, convergence_size):
+    print(data_set.filename)
     # Standard parameters to run on the data_set
     num_folds = 10
     size_inputs = len(data_set.attr_cols)
@@ -36,8 +37,7 @@ def run_mfnn_classification(data_set, classes, learning_rate, momentum, converge
     size_hidden_layers = math.floor((size_inputs + size_outputs) / 2)
     folds = data_set.validation_folds(num_folds)
     for hidden_layer in num_hidden_layers:
-        layers = [size_hidden_layers] * (hidden_layer + 2)
-        layers[0], layers[-1] = size_inputs, size_outputs
+        layers = [size_inputs] + ([size_hidden_layers] * hidden_layer) + [size_outputs]
         print("Network " + str(layers))
         fold_average = []
         for fold_i, fold in enumerate(folds):
@@ -51,6 +51,7 @@ def run_mfnn_classification(data_set, classes, learning_rate, momentum, converge
 
 
 def run_mfnn_regression(data_set, learning_rate, momentum, convergence_size):
+    print(data_set.filename)
     num_folds = 10
     size_inputs = len(data_set.attr_cols)
     num_hidden_layers = [0, 1, 2]
@@ -93,30 +94,27 @@ def test_regression():
     multilayer.train()
 
 
-def run_mfnn_regression_data_sets(learning_rate, momentum, convergence_size):
+def run_mfnn_regression_data_sets():
     forest_fires_data = d.get_forest_fires_data("../data/forestfires.data")
     machine_data = d.get_machine_data("../data/machine.data")
     wine_data = d.get_wine_data("../data/winequality.data")
 
-    print("Forest Fire Data")
-    run_mfnn_regression(forest_fires_data, learning_rate, momentum, convergence_size)
-    print("Machine Data")
-    run_mfnn_regression(machine_data, learning_rate, momentum, convergence_size)
-    print("Wine Data")
-    run_mfnn_regression(wine_data, learning_rate, momentum, convergence_size)
+    run_mfnn_regression(forest_fires_data, 1, 0.1, 100)
+    run_mfnn_regression(machine_data, 1, 0.1, 100)
+    run_mfnn_regression(wine_data, 1, 0.1, 100)
 
 
 def run_mfnn_classification_data_sets(learning_rate, momentum, convergence_size):
     abalone_data = d.get_abalone_data("../data/abalone.data")
+    abalone_classes = [str(i) for i in range(1, 30)]
     car_data = d.get_car_data("../data/car.data")
+    car_classes = ["unacc", "acc", "good", "vgood"]
     segmentation_data = d.get_segmentation_data("../data/segmentation.data")
+    segmentation_classes = ["BRICKFACE", "SKY", "FOLIAGE", "CEMENT", "WINDOW", "PATH", "GRASS"]
 
-    # print("Abalone Data")
-    # run_mfnn_classification(abalone_data, [float(i) for i in range(1, 30)], learning_rate, momentum, convergence_size)
-    # print("Car data")
-    # run_mfnn_classification(car_data, ["unacc", "acc", "good", "vgood"], learning_rate, momentum, convergence_size)
-    print("Segmentation Data")
-    run_mfnn_classification(segmentation_data, ["BRICKFACE", "SKY", "FOLIAGE", "CEMENT", "WINDOW", "PATH", "GRASS"], learning_rate, momentum, convergence_size)
+    run_mfnn_classification(abalone_data, abalone_classes, 1, .1, 100)
+    run_mfnn_classification(car_data, car_classes, 1, .1, 100)
+    run_mfnn_classification(segmentation_data, segmentation_classes, 1, .1, 100)
 
 
 def main():

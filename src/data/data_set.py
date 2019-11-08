@@ -193,7 +193,7 @@ def get_abalone_data(file_name, normalize=True):
     # Convert male, female, infant column to numeric values
     abalone_data.convert_str_attribute(0, {'I': 0, 'F': 1, 'M': 2})
     # Convert attribute columns to floats
-    abalone_data.convert_to_float(list(range(0, 9)))
+    abalone_data.convert_to_float(list(range(0, 8)))
     # Normalize values
     if normalize:
         abalone_data.normalize_z_score(list(range(0, 8)))

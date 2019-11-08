@@ -12,7 +12,9 @@ import math
 def get_rbf_data(data_set_name, data_opener):
     data_set_name = "../rbf-data/" + data_set_name
     folds = []
+    # Get set of files for each folds.
     for fold_i in range(10):
+        # train, test, and center data in separate files.
         train_data = data_opener(data_set_name + "-fold-" + str(fold_i) + "-train.txt", False)
         test_data = data_opener(data_set_name + "-fold-" + str(fold_i) + "-test.txt", False)
         center_data = data_opener(data_set_name + "-fold-" + str(fold_i) + "-centers.txt", False)
@@ -27,16 +29,22 @@ def run_rbfnn_classification(data_set_name, data_opener, classes, learning_rate,
     num_folds = 10
     folds = get_rbf_data(data_set_name, data_opener)
     fold_average = []
+    # Iterate through each fold in cross validation..
     for fold_i, fold in enumerate(folds):
         test = fold['test']
+        # partition the training part of the fold into a true training set AND a small validation set.
         train, validation = fold['train'].partition(.8)
         center = fold['center']
         size_inputs = len(test.attr_cols)
+        # Create the network.
         rbfnn = RBFNN(center, train, validation, size_inputs, learning_rate, convergence_size, classes)
+        # Train the network.
         rbfnn.train()
+        # Get the accuracy on the test set.
         fold_accuracy = rbfnn.get_accuracy(test)
         fold_average.append(fold_accuracy)
         print("\t Fold: " + str(fold_i + 1) + " - Accuracy: " + str(fold_accuracy))
+    # Show average accuracy across all folds.
     print("Average Accuracy: " + str(sum(fold_average) / num_folds))
 
 
@@ -47,16 +55,22 @@ def run_rbfnn_regression(data_set_name, data_opener, learning_rate, convergence_
     num_folds = 10
     folds = get_rbf_data(data_set_name, data_opener)
     fold_average = []
+    # Iterate through each fold in cross validation.
     for fold_i, fold in enumerate(folds):
         test = fold['test']
+        # partition the training part of the fold into a true training AND a small validation set.
         train, validation = fold['train'].partition(.8)
         center = fold['center']
         size_inputs = len(test.attr_cols)
+        # Create the newtork.
         rbfnn = RBFNN(center, train, validation, size_inputs, learning_rate, convergence_size)
+        # Train the network.
         rbfnn.train()
+        # Get the accuracy on the test set.
         fold_error = rbfnn.get_error(test)
         fold_average.append(fold_error)
         print("\t Fold: " + str(fold_i + 1) + " - Error: " + str(fold_error))
+    # Show average accuracy across all folds.
     print("Average Error: " + str(sum(fold_average) / num_folds))
 
 
@@ -66,20 +80,29 @@ def run_mfnn_classification(data_set, classes, learning_rate, momentum, converge
     # Standard parameters to run on the data_set
     num_folds = 10
     size_inputs = len(data_set.attr_cols)
+    # Want to examine 0, 1, and 2 hidden layers.
     num_hidden_layers = [0, 1, 2]
     size_outputs = len(classes)
+    # The size of the hidden layers is the average between the size of inputs and outputs.
     size_hidden_layers = math.floor((size_inputs + size_outputs) / 2)
     folds = data_set.validation_folds(num_folds)
+    # Iterate over all the number of hidden layers we need to try.
     for hidden_layer in num_hidden_layers:
+        # Setup the layer sizes into a list.
         layers = [size_inputs] + ([size_hidden_layers] * hidden_layer) + [size_outputs]
         print("Network " + str(layers))
         fold_average = []
+        # Iterate through each fold in cross validation.
         for fold_i, fold in enumerate(folds):
             test = fold['test']
+            # partion the training part of the fold into a true training set AND a small validation set.
             train, validation = fold['train'].partition(.8)
             print(layers)
+            # Create the network.
             mfnn = MFNN(train, validation, layers, learning_rate, momentum, convergence_size, classes)
+            # Train the network/
             mfnn.train()
+            # Get the accuracy on the test set.
             fold_average.append(mfnn.get_accuracy(test))
             print("\t Fold: " + str(fold_i+1) + " - Accuracy: " + str(mfnn.get_accuracy(test)))
         print("Average Accuracy: " + str(sum(fold_average) / num_folds))
@@ -90,20 +113,29 @@ def run_mfnn_regression(data_set, learning_rate, momentum, convergence_size):
     print(data_set.filename)
     num_folds = 10
     size_inputs = len(data_set.attr_cols)
+    # Want to examine 0, 1, and 2 hidden layers.
     num_hidden_layers = [0, 1, 2]
+    # Size of the hidden layers (num nodes) is the average of the input and output size.
     size_hidden_layers = math.floor((size_inputs + 1) / 2)
 
     folds = data_set.validation_folds(num_folds)
+    # Iterate over all the number of hidden layers we need to try.
     for hidden_layers in num_hidden_layers:
+        # Setup the layer sizes into a list.
         layers = [size_hidden_layers] * (hidden_layers + 2)
         layers[0], layers[-1] = size_inputs, 1
         print("Network " + str(layers))
         fold_average = []
+        # Iterate through each fold in cross validation.
         for fold_i, fold in enumerate(folds):
             test = fold['test']
+            # Partion the training part of the fold into a true training set AND a small validation set.
             train, validation = fold['train'].partition(.8)
+            # Create the network.
             mfnn = MFNN(train, validation, layers, learning_rate, momentum, convergence_size, None)
+            # Train the network.
             mfnn.train()
+            # Get the accuracy on the test.
             fold_average.append(mfnn.get_error(test))
             print("\t Fold: " + str(fold_i+1) + " - Error: " + str(mfnn.get_error(test)))
         print("Average Error: " + str(sum(fold_average)/num_folds))
